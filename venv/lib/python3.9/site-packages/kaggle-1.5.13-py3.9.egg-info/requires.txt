@@ -1,0 +1,7 @@
+six>=1.10
+certifi
+python-dateutil
+requests
+tqdm
+python-slugify
+urllib3
