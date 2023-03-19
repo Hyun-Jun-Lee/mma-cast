@@ -4,9 +4,11 @@ from core.models import Core
 # Create your models here.
 
 
-class InFo(Core):
+class Fighter(Core):
     age = models.IntegerField(null=True, blank=True)
-    name = models.TextField(null=True, blank=True)
+    first_name = models.TextField(null=True, blank=True)
+    last_name = models.TextField(null=True, blank=True)
+    nickname = models.TextField(null=True, blank=True)
     win = models.IntegerField(null=True, blank=True)
     lose = models.IntegerField(null=True, blank=True)
     weight = models.IntegerField(null=True, blank=True)
@@ -18,6 +20,13 @@ class InFo(Core):
     def winning_rate(self):
         rate = (self.win / (self.win + self.lose)) * 100
         return rate
+
+    @property
+    def full_name(self):
+        if self.nickname:
+            return self.first_name + self.nickname + self.last_name
+        else:
+            return self.first_name + self.last_name
 
     @property
     def divisions(self):
@@ -50,7 +59,9 @@ class InFo(Core):
 
 
 class StrikingStat(Core):
-    fighter = models.ForeignKey(InFo, on_delete=models.CASCADE, related_name="striking")
+    fighter = models.ForeignKey(
+        Fighter, on_delete=models.CASCADE, related_name="striking"
+    )
 
     total_strikes_attempts = models.IntegerField(blank=True, null=True)
     total_strikes_landed = models.IntegerField(blank=True, null=True)
@@ -83,7 +94,9 @@ class StrikingStat(Core):
 
 
 class GraplingStat(Core):
-    fighter = models.ForeignKey(InFo, on_delete=models.CASCADE, related_name="grapling")
+    fighter = models.ForeignKey(
+        Fighter, on_delete=models.CASCADE, related_name="grapling"
+    )
 
     takedowns_landed = models.IntegerField(blank=True, null=True)
     takedowns_attempts = models.IntegerField(blank=True, null=True)

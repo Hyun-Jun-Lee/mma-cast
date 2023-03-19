@@ -35,7 +35,8 @@ for i in html.find_all("tr")[2:]:
     fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
 
     fighter_id = i.find("a", "b-link b-link_style_black")["href"].split("/")[-1]
-    name = fighter_info_list[0] + fighter_info_list[1]
+    first_name = fighter_info_list[0]
+    last_name = fighter_info_list[1]
     nickname = fighter_info_list[2] if fighter_info_list[2] else None
     height = 0 if fighter_info_list[3] == "--" else feet_to_cm(fighter_info_list[3])
     weight = 0 if fighter_info_list[4] == "--" else lbs_to_kg(fighter_info_list[4])
