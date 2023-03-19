@@ -1,10 +1,6 @@
 import time, requests, re
 from bs4 import BeautifulSoup
 
-# a-z
-# for alphabet in range(97, 123):
-#     url = f"http://www.ufcstats.com/statistics/fighters?char={chr(alphabet)}&page=all"
-
 
 def inch_to_cm(data: str, is_reach=False):
     """
@@ -27,33 +23,55 @@ def lbs_to_kg(data: str):
     return to_int
 
 
+def craw_fighter_info(fighter_info_td: list):
+    # print("--------")
+    model_dict = {}
+    fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
+    if fighter_info_list:
+        model_dict["first_name"] = fighter_info_list[0]
+        model_dict["last_name"] = fighter_info_list[1]
+        model_dict["nickname"] = fighter_info_list[2] if fighter_info_list[2] else None
+        model_dict["height"] = (
+            0 if fighter_info_list[3] == "--" else inch_to_cm(fighter_info_list[3])
+        )
+        model_dict["weight"] = (
+            0 if fighter_info_list[4] == "--" else lbs_to_kg(fighter_info_list[4])
+        )
+        model_dict["reach"] = (
+            0
+            if fighter_info_list[5] == "--"
+            else inch_to_cm(data=fighter_info_list[5], is_reach=True)
+        )
+        model_dict["stance"] = (
+            0 if fighter_info_list[6] == "--" else fighter_info_list[6]
+        )
+        model_dict["win"] = 0 if fighter_info_list[7] == "--" else fighter_info_list[7]
+        model_dict["lose"] = 0 if fighter_info_list[8] == "--" else fighter_info_list[8]
+        model_dict["draw"] = 0 if fighter_info_list[9] == "--" else fighter_info_list[9]
+        # print("--------")
+
+    return model_dict
+
+
+# a-z
+# for alphabet in range(97, 123):
+#     url = f"http://www.ufcstats.com/statistics/fighters?char={chr(alphabet)}&page=all"
+# def temp():
 url = f"http://www.ufcstats.com/statistics/fighters?char=a&page=all"
 req = requests.get(url).text
 time.sleep(1)
 html = BeautifulSoup(req, "html.parser")
-k = 0
-for i in html.find_all("tr")[2:]:
-    print("--------")
-    fighter_info_td = i.find_all("td")
-    fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
 
-    fighter_id = i.find("a", "b-link b-link_style_black")["href"].split("/")[-1]
-    first_name = fighter_info_list[0]
-    last_name = fighter_info_list[1]
-    nickname = fighter_info_list[2] if fighter_info_list[2] else None
-    height = 0 if fighter_info_list[3] == "--" else inch_to_cm(fighter_info_list[3])
-    weight = 0 if fighter_info_list[4] == "--" else lbs_to_kg(fighter_info_list[4])
-    reach = (
-        0
-        if fighter_info_list[5] == "--"
-        else inch_to_cm(data=fighter_info_list[5], is_reach=True)
-    )
-    stance = 0 if fighter_info_list[6] == "--" else fighter_info_list[6]
-    win = 0 if fighter_info_list[7] == "--" else fighter_info_list[7]
-    lose = 0 if fighter_info_list[8] == "--" else fighter_info_list[8]
-    draw = 0 if fighter_info_list[9] == "--" else fighter_info_list[9]
-
-    print(weight)
-    print("--------")
-
-# ['Hunter', 'Azure', '', '5\' 8"', '145 lbs.', '69.0"', 'Orthodox', '9', '2', '0', '']
+for row in html.find_all("tr"):
+    try:
+        web_fighter_id = row.find("a", "b-link b-link_style_black")["href"].split("/")[
+            -1
+        ]
+    except:
+        continue
+    fighter_info_td = row.find_all("td")
+    temp = craw_fighter_info(fighter_info_td)
+    print("------")
+    print(web_fighter_id)
+    print(temp)
+    print("------")
