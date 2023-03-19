@@ -5,18 +5,40 @@ from core.models import Core
 
 
 class InFo(Core):
-    age = models.IntegerField()
-    name = models.TextField()
-    win = models.TextField()
-    lose = models.TextField()
-    division = models.TextField()
-    weight = models.TextField()
-    reach = models.TextField()
+    age = models.IntegerField(null=True, blank=True)
+    name = models.TextField(null=True, blank=True)
+    win = models.IntegerField(null=True, blank=True)
+    lose = models.IntegerField(null=True, blank=True)
+    weight = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    reach = models.IntegerField(null=True, blank=True)
+    stance = models.TextField(null=True, blank=True)
 
     @property
     def winning_rate(self):
         rate = (self.win / (self.win + self.lose)) * 100
         return rate
+
+    @property
+    def divisions(self):
+        if self.weight <= 56.8:
+            return "Flyweight"
+        elif self.weight <= 61.3:
+            return "Bantamweight"
+        elif self.weight <= 65.9:
+            return "Featherweight"
+        elif self.weight <= 70.4:
+            return "Lightweight"
+        elif self.weight <= 77.2:
+            return "Welterweight"
+        elif self.weight <= 84.0:
+            return "Middleweight"
+        elif self.weight <= 93.1:
+            return "Light heavyweight"
+        elif self.weight <= 120.4:
+            return "Heavyweight"
+        else:
+            return None
 
     @property
     def ko_wins(self):
