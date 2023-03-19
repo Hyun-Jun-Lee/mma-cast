@@ -7,17 +7,16 @@ from bs4 import BeautifulSoup
 
 
 def feet_to_cm(data):
-    # str_feet = re.sub("[^0-9]", "", data)
+    """
+    concert inch(ex.6'7") to cm
+    """
     H_feet = data.split(" ")[0]
     H_inch = data.split(" ")[-1]
-    H_feet_e = int(re.sub("[^0-9]", "", H_feet))
-    H_inch_e = int(re.sub("[^0-9]", "", H_inch))
-    print(H_feet_e, H_inch_e)
 
-    # H_feet_e = int(re.sub("[^0-9]", "", H_feet)) * 12
-    # H_inch_e = int(re.sub("[^0-9]", "", H_inch))
-    # to_cm = (H_feet_e + H_inch_e) * 2.54
-    # return to_cm
+    H_feet_e = int(re.sub("[^0-9]", "", H_feet)) * 12
+    H_inch_e = int(re.sub("[^0-9]", "", H_inch))
+    to_cm = round(((H_feet_e + H_inch_e) * 2.54), 1)
+    return to_cm
 
 
 url = f"http://www.ufcstats.com/statistics/fighters?char=a&page=all"
@@ -33,16 +32,7 @@ for i in html.find_all("tr")[2:]:
     fighter_id = i.find("a", "b-link b-link_style_black")["href"].split("/")[-1]
     name = fighter_info_list[0] + fighter_info_list[1]
     nickname = fighter_info_list[2]
-    if fighter_info_list[3] == "--":
-        print(fighter_info_list[3])
-    # height = feet_to_cm(fighter_info_list[3])
-    # print(height)
+    height = 0 if fighter_info_list[3] == "--" else feet_to_cm(fighter_info_list[3])
+    print(height)
     # print(fighter_info_list)
     print("--------")
-# for i in html.find_all("tbody"):
-
-# for i in html.find_all("a", "b-link b-link_style_black"):
-#     fighter_id = i["href"].split("/")[-1]
-
-
-# body > section > div > div > div > table > tbody
