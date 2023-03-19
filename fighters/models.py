@@ -9,16 +9,22 @@ class InFo(Core):
     name = models.TextField()
     win = models.TextField()
     lose = models.TextField()
-    height = models.TextField()
+    division = models.TextField()
     weight = models.TextField()
     reach = models.TextField()
-    ko_wins = models.IntegerField()
-    ko_lose = models.IntegerField()
 
     @property
     def winning_rate(self):
         rate = (self.win / (self.win + self.lose)) * 100
         return rate
+
+    @property
+    def ko_wins(self):
+        pass
+
+    @property
+    def ko_lose(self):
+        pass
 
 
 class StrikingStat(Core):
