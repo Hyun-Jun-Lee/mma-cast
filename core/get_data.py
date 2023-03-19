@@ -1,3 +1,4 @@
+from fighters.models import *
 import pandas as pd
 
 """
@@ -6,7 +7,7 @@ import pandas as pd
     win = models.TextField()
     lose = models.TextField()
     height = models.TextField()
-    weight = models.TextField()
+    division = models.TextField()
     reach = models.TextField()
     ko_wins = models.IntegerField()
     ko_lose = models.IntegerField()
