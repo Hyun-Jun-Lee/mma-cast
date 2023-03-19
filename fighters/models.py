@@ -11,6 +11,7 @@ class Fighter(Core):
     nickname = models.TextField(null=True, blank=True)
     win = models.IntegerField(null=True, blank=True)
     lose = models.IntegerField(null=True, blank=True)
+    draw = models.IntegerField(null=True, blank=True)
     weight = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
     reach = models.IntegerField(null=True, blank=True)
@@ -18,8 +19,12 @@ class Fighter(Core):
 
     @property
     def winning_rate(self):
-        rate = (self.win / (self.win + self.lose)) * 100
+        rate = (self.win / (self.total_game)) * 100
         return rate
+
+    @property
+    def total_game(self):
+        return self.win + self.lose + self.draw
 
     @property
     def full_name(self):

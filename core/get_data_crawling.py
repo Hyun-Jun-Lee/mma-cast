@@ -6,10 +6,13 @@ from bs4 import BeautifulSoup
 #     url = f"http://www.ufcstats.com/statistics/fighters?char={chr(alphabet)}&page=all"
 
 
-def feet_to_cm(data):
+def inch_to_cm(data: str, is_reach=False):
     """
     concert inch(ex.6'7") to cm
     """
+    if is_reach:
+        reach = round((int(re.sub("[^0-9]", "", data)) * 2.54), 1)
+        return reach
     H_feet = data.split(" ")[0]
     H_inch = data.split(" ")[-1]
 
@@ -19,7 +22,7 @@ def feet_to_cm(data):
     return to_cm
 
 
-def lbs_to_kg(data):
+def lbs_to_kg(data: str):
     to_int = round((int(re.sub("[^0-9]", "", data)) / 2.205), 1)
     return to_int
 
@@ -38,8 +41,18 @@ for i in html.find_all("tr")[2:]:
     first_name = fighter_info_list[0]
     last_name = fighter_info_list[1]
     nickname = fighter_info_list[2] if fighter_info_list[2] else None
-    height = 0 if fighter_info_list[3] == "--" else feet_to_cm(fighter_info_list[3])
+    height = 0 if fighter_info_list[3] == "--" else inch_to_cm(fighter_info_list[3])
     weight = 0 if fighter_info_list[4] == "--" else lbs_to_kg(fighter_info_list[4])
+    reach = (
+        0
+        if fighter_info_list[5] == "--"
+        else inch_to_cm(data=fighter_info_list[5], is_reach=True)
+    )
+    stance = 0 if fighter_info_list[6] == "--" else fighter_info_list[6]
+    win = 0 if fighter_info_list[7] == "--" else fighter_info_list[7]
+    lose = 0 if fighter_info_list[8] == "--" else fighter_info_list[8]
+    draw = 0 if fighter_info_list[9] == "--" else fighter_info_list[9]
+
     print(weight)
     print("--------")
 
