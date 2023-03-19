@@ -19,6 +19,11 @@ def feet_to_cm(data):
     return to_cm
 
 
+def lbs_to_kg(data):
+    to_int = round((int(re.sub("[^0-9]", "", data)) / 2.205), 1)
+    return to_int
+
+
 url = f"http://www.ufcstats.com/statistics/fighters?char=a&page=all"
 req = requests.get(url).text
 time.sleep(1)
@@ -31,8 +36,10 @@ for i in html.find_all("tr")[2:]:
 
     fighter_id = i.find("a", "b-link b-link_style_black")["href"].split("/")[-1]
     name = fighter_info_list[0] + fighter_info_list[1]
-    nickname = fighter_info_list[2]
+    nickname = fighter_info_list[2] if fighter_info_list[2] else None
     height = 0 if fighter_info_list[3] == "--" else feet_to_cm(fighter_info_list[3])
-    print(height)
-    # print(fighter_info_list)
+    weight = 0 if fighter_info_list[4] == "--" else lbs_to_kg(fighter_info_list[4])
+    print(weight)
     print("--------")
+
+# ['Hunter', 'Azure', '', '5\' 8"', '145 lbs.', '69.0"', 'Orthodox', '9', '2', '0', '']
