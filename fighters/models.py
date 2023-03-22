@@ -5,6 +5,7 @@ from core.models import Core
 
 
 class Fighter(Core):
+    fighter_id = models.TextField(null=True, blank=True)
     age = models.IntegerField(null=True, blank=True)
     first_name = models.TextField(null=True, blank=True)
     last_name = models.TextField(null=True, blank=True)
