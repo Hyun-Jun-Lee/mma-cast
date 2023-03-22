@@ -23,12 +23,15 @@ class CrawlingModule:
                     continue
                 fighter_info_td = row.find_all("td")
                 if fighter_info_td:
-                    fighters_dict = self.crawling_fighter_info(fighter_info_td)
+                    fighters_dict = self._crawling_fighter_info(fighter_info_td)
+                    print(fighters_dict)
                     # Frighters.objects.update_or_create(**fighters_dict)
-                fighter_detail = self.crawling_fighter_detail(fighter_id)
+                # fighter_detail = self.crawling_fighter_detail(fighter_id)
 
     def crawling_fighter_detail(self, fighter_id):
         fighter_url = f"{self.base_url}fighter-details/{fighter_id}"
+        req = requests.get(fighter_url).text
+        html = BeautifulSoup(req, "html.parser")
 
     def _inch_to_cm(self, data: str, is_reach=False):
         """
@@ -49,7 +52,7 @@ class CrawlingModule:
         to_int = round((int(re.sub("[^0-9]", "", data)) / 2.205), 1)
         return to_int
 
-    def crawling_fighter_info(self, fighter_info_td: list):
+    def _crawling_fighter_info(self, fighter_info_td: list):
         model_dict = {}
         fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
         if len(fighter_info_list) > 1:

@@ -54,24 +54,24 @@ def craw_fighter_info(fighter_info_td: list):
 
 
 # a-z
-# for alphabet in range(97, 123):
-#     url = f"http://www.ufcstats.com/statistics/fighters?char={chr(alphabet)}&page=all"
-# def temp():
-url = f"http://www.ufcstats.com/statistics/fighters?char=a&page=all"
-req = requests.get(url).text
-time.sleep(1)
-html = BeautifulSoup(req, "html.parser")
+for alphabet in range(97, 123):
+    url = f"http://www.ufcstats.com/statistics/fighters?char={chr(alphabet)}&page=all"
+    # def temp():
+    # url = f"http://www.ufcstats.com/statistics/fighters?char=a&page=all"
+    req = requests.get(url).text
+    time.sleep(1)
+    html = BeautifulSoup(req, "html.parser")
 
-for row in html.find_all("tr"):
-    try:
-        web_fighter_id = row.find("a", "b-link b-link_style_black")["href"].split("/")[
-            -1
-        ]
-    except:
-        continue
-    fighter_info_td = row.find_all("td")
-    temp = craw_fighter_info(fighter_info_td)
-    print("------")
-    print(web_fighter_id)
-    print(temp)
-    print("------")
+    for row in html.find_all("tr"):
+        try:
+            web_fighter_id = row.find("a", "b-link b-link_style_black")["href"].split(
+                "/"
+            )[-1]
+        except:
+            continue
+        fighter_info_td = row.find_all("td")
+        temp = craw_fighter_info(fighter_info_td)
+        print("------")
+        print(web_fighter_id)
+        print(temp)
+        print("------")
