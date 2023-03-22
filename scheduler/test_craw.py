@@ -8,6 +8,9 @@ class CrawlingModule:
         self.base_url = "http://www.ufcstats.com/"
 
     def get_fighters(self):
+        """
+        # get all fighers basic info & save to Fighter table
+        """
         for alphabet in range(97, 123):
             url = f"{self.base_url}statistics/fighters?char={chr(alphabet)}&page=all"
             req = requests.get(url).text
@@ -18,9 +21,17 @@ class CrawlingModule:
                 fighters_dict = self._crawling_fighter_info(row)
                 print(fighters_dict)
                 # Frighters.objects.update_or_create(**fighters_dict)
-                # fighter_detail = self.crawling_fighter_detail(fighter_id)
 
-    def crawling_fighter_detail(self, fighter_id):
+    def get_detail_stat(self):
+        """
+        # get fighter detail start used by fighter_id & save to *stat table
+        """
+        # for fighter in Fighter.objects.all():
+        #     fighter_id = fighter.fighter_id
+        fighter_id = "1338e2c7480bdf9e"
+        fighter_detail = self._crawling_fighter_detail(fighter_id)
+
+    def _crawling_fighter_detail(self, fighter_id):
         fighter_url = f"{self.base_url}fighter-details/{fighter_id}"
         req = requests.get(fighter_url).text
         html = BeautifulSoup(req, "html.parser")
