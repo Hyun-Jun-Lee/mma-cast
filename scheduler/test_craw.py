@@ -15,17 +15,9 @@ class CrawlingModule:
             html = BeautifulSoup(req, "html.parser")
 
             for row in html.find_all("tr"):
-                try:
-                    fighter_id = row.find("a", "b-link b-link_style_black")[
-                        "href"
-                    ].split("/")[-1]
-                except:
-                    continue
-                fighter_info_td = row.find_all("td")
-                if fighter_info_td:
-                    fighters_dict = self._crawling_fighter_info(fighter_info_td)
-                    print(fighters_dict)
-                    # Frighters.objects.update_or_create(**fighters_dict)
+                fighters_dict = self._crawling_fighter_info(row)
+                print(fighters_dict)
+                # Frighters.objects.update_or_create(**fighters_dict)
                 # fighter_detail = self.crawling_fighter_detail(fighter_id)
 
     def crawling_fighter_detail(self, fighter_id):
@@ -52,10 +44,18 @@ class CrawlingModule:
         to_int = round((int(re.sub("[^0-9]", "", data)) / 2.205), 1)
         return to_int
 
-    def _crawling_fighter_info(self, fighter_info_td: list):
+    def _crawling_fighter_info(self, row: list):
+        fighter_info_td = row.find_all("td")
+        try:
+            fighter_id = row.find("a", "b-link b-link_style_black")["href"].split("/")[
+                -1
+            ]
+        except:
+            fighter_id = None
         model_dict = {}
         fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
         if len(fighter_info_list) > 1:
+            model_dict["fighter_id"] = fighter_id
             model_dict["first_name"] = fighter_info_list[0]
             model_dict["last_name"] = fighter_info_list[1]
             model_dict["nickname"] = (
