@@ -36,6 +36,30 @@ class CrawlingModule:
         req = requests.get(fighter_url).text
         html = BeautifulSoup(req, "html.parser")
 
+        for line in html.find_all(
+            "tr",
+            "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click",
+        ):
+            print("-----")
+            game_result = line.find("td", "b-fight-details__table-col").text.strip()
+            vs_fighter = " ".join(
+                str(
+                    re.sub(
+                        "[^a-zA-Z]",
+                        "/",
+                        line.find(
+                            "td", "b-fight-details__table-col l-page_align_left"
+                        ).text.strip(),
+                    )
+                ).split("/")[-2:]
+            )
+            # print(
+            #     line.find("td", "b-fight-details__table-col l-page_align_left")
+            #     .text.strip()
+            #     .replace("\n", "")
+            #     .replace(" ", ",")
+            # )
+
     def _inch_to_cm(self, data: str, is_reach=False):
         """
         concert inch(ex.6'7") to cm
@@ -104,4 +128,4 @@ class CrawlingModule:
         return model_dict
 
 
-CrawlingModule().get_fighters()
+CrawlingModule().get_detail_stat()
