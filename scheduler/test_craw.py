@@ -10,6 +10,7 @@ class CrawlingModule:
     def get_fighters(self):
         """
         # get all fighers basic info & save to Fighter table
+        # create Game table
         """
         for alphabet in range(97, 123):
             url = f"{self.base_url}statistics/fighters?char={chr(alphabet)}&page=all"
@@ -19,7 +20,9 @@ class CrawlingModule:
 
             for row in html.find_all("tr"):
                 fighters_dict = self._crawling_fighter_info(row)
-                print(fighters_dict)
+                fighter_all_game = self._make_fighter_all_game(
+                    fighters_dict["fighter_id"]
+                )
                 # Frighters.objects.update_or_create(**fighters_dict)
 
     def get_detail_stat(self):
@@ -29,9 +32,9 @@ class CrawlingModule:
         # for fighter in Fighter.objects.all():
         #     fighter_id = fighter.fighter_id
         fighter_id = "1338e2c7480bdf9e"
-        fighter_detail = self._crawling_fighter_detail(fighter_id)
+        fighter_all_game = self._make_fighter_all_game(fighter_id)
 
-    def _crawling_fighter_detail(self, fighter_id):
+    def _make_fighter_all_game(self, fighter_id):
         fighter_url = f"{self.base_url}fighter-details/{fighter_id}"
         req = requests.get(fighter_url).text
         html = BeautifulSoup(req, "html.parser")
@@ -41,24 +44,33 @@ class CrawlingModule:
             "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click",
         ):
             print("-----")
-            game_result = line.find("td", "b-fight-details__table-col").text.strip()
-            vs_fighter = " ".join(
-                str(
-                    re.sub(
-                        "[^a-zA-Z]",
-                        "/",
-                        line.find(
-                            "td", "b-fight-details__table-col l-page_align_left"
-                        ).text.strip(),
-                    )
-                ).split("/")[-2:]
-            )
-            # print(
-            #     line.find("td", "b-fight-details__table-col l-page_align_left")
-            #     .text.strip()
-            #     .replace("\n", "")
-            #     .replace(" ", ",")
+
+            match_id = re.sub("[^0-9a-zA-Z]", "", line["onclick"].split("/")[-2:][1])
+
+            # game_result = line.find("td", "b-fight-details__table-col").text.strip()
+            # vs_fighter = " ".join(
+            #     str(
+            #         re.sub(
+            #             "[^a-zA-Z]",
+            #             "/",
+            #             line.find(
+            #                 "td", "b-fight-details__table-col l-page_align_left"
+            #             ).text.strip(),
+            #         )
+            #     ).split("/")[-2:]
             # )
+
+            # match_info_list = []
+            # for i in line.find_all("td", "b-fight-details__table-col")[3:]:
+            #     match_info_list.append(
+            #         list(
+            #             filter(
+            #                 None, list(set(i.text.strip().replace("\n", "").split(" ")))
+            #             )
+            #         )
+            #     )
+            #     # match_info_list.append(re.sub("[^0-9a-zA-Z]", "/", i.text.strip()))
+            # print(match_info_list)
 
     def _inch_to_cm(self, data: str, is_reach=False):
         """
