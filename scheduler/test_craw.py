@@ -20,21 +20,33 @@ class CrawlingModule:
 
             for row in html.find_all("tr"):
                 fighters_dict = self._crawling_fighter_info(row)
-                fighter_all_game = self._make_fighter_all_game(
-                    fighters_dict["fighter_id"]
-                )
+                # fighter_all_game = self._set_fighter_all_game(
+                #     fighters_dict["fighter_id"]
+                # )
                 # Frighters.objects.update_or_create(**fighters_dict)
 
-    def get_detail_stat(self):
+    def get_all_games(self):
         """
-        # get fighter detail start used by fighter_id & save to *stat table
+        # get all game info
         """
-        # for fighter in Fighter.objects.all():
-        #     fighter_id = fighter.fighter_id
-        fighter_id = "1338e2c7480bdf9e"
-        fighter_all_game = self._make_fighter_all_game(fighter_id)
+        self._set_title()
+        self._set_match()
+        self._set_match_stat()
+        pass
 
-    def _make_fighter_all_game(self, fighter_id):
+    def _set_title(self):
+        url = f"{self.base_url}statistics/events/completed?page=all"
+        req = requests.get(url).text
+        time.sleep(1)
+        html = BeautifulSoup(req, "html.parser")
+
+    def _set_match(self):
+        pass
+
+    def _set_match_stat(self):
+        pass
+
+    def _set_fighter_all_game(self, fighter_id):
         fighter_url = f"{self.base_url}fighter-details/{fighter_id}"
         req = requests.get(fighter_url).text
         html = BeautifulSoup(req, "html.parser")
