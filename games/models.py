@@ -5,7 +5,10 @@ from core.models import Core
 
 
 class Title(Core):
-    pass
+    title = models.TextField(blank=True, null=True)
+    location = models.TextField(blank=True, null=True)
+    game_date = models.DateField(blank=True, null=True)
+    url = models.TextField(blank=True, null=True)
 
 
 class Match(Core):
