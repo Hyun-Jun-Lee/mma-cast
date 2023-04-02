@@ -1,6 +1,7 @@
 import time, requests, re
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 
 class CrawlingModule:
@@ -39,6 +40,24 @@ class CrawlingModule:
         req = requests.get(url).text
         time.sleep(1)
         html = BeautifulSoup(req, "html.parser")
+
+        for tr in html.find_all("tr", "b-statistics__table-row"):
+            if tr.find("a"):
+                title = tr.find("a").text.strip()
+                url = tr.find("a")["href"]
+                if tr.find("span"):
+                    game_date = tr.find("span").text.strip()
+                    game_date = datetime.strptime(game_date, "%B %d, %Y").date()
+                    # print(game_date)
+                if tr.find(
+                    "td",
+                    "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
+                ):
+                    location = tr.find(
+                        "td",
+                        "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
+                    ).text.strip()
+                # Title.objects.get_or_create(url=url,title=title, game_date=game_date,location=location)
 
     def _set_match(self):
         pass
@@ -152,4 +171,4 @@ class CrawlingModule:
         return model_dict
 
 
-CrawlingModule().get_detail_stat()
+CrawlingModule().get_all_games()
