@@ -60,7 +60,16 @@ class CrawlingModule:
                 # Title.objects.get_or_create(url=url,title=title, game_date=game_date,location=location)
 
     def _set_match(self):
-        pass
+        # for obj in Title.objects.all():
+        #     url = obj.url
+        #     req = requests.get(url).text
+        #     time.sleep(1)
+        #     html = BeautifulSoup(req, "html.parser")
+        url = "http://www.ufcstats.com/event-details/aec273fcb765330d"
+        req = requests.get(url).text
+        time.sleep(1)
+        html = BeautifulSoup(req, "html.parser")
+        # TODO : create Match by each table row
 
     def _set_match_stat(self):
         pass
