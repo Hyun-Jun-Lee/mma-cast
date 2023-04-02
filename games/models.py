@@ -15,7 +15,16 @@ class Match(Core):
     title = models.ForeignKey(
         "games.Match", on_delete=models.CASCADE, related_name="stats"
     )
-    pass
+    winner = models.ForeignKey(
+        "fighters.Fighter", on_delete=models.CASCADE, related_name="winners"
+    )
+    loser = models.ForeignKey(
+        "fighters.Fighter", on_delete=models.CASCADE, related_name="losers"
+    )
+    weight_class = models.TextField(blank=True, null=True)
+    method = models.TextField(blank=True, null=True)
+    finish_round = models.TextField(blank=True, null=True)
+    finish_time = models.TextField(blank=True, null=True)
 
 
 class MatchStat(Core):
