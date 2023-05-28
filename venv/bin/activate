@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/hj/Desktop/UFC-CAST/venv"
+VIRTUAL_ENV="/Users/hj/Documents/GitHub/mma-cast/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
