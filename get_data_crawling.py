@@ -1,5 +1,66 @@
 import time, requests, re
 from bs4 import BeautifulSoup
+from datetime import datetime
+
+""" async code
+async def craw_game():
+    url = "http://www.ufcstats.com/statistics/events/completed?page=all"
+    req = requests.get(url).text
+    time.sleep(1)
+    html = BeautifulSoup(req, "html.parser")
+    tasks = []
+    for tr in html.find_all("tr", "b-statistics__table-row"):
+        model_dict = {}
+        if tr.find("a"):
+            title = tr.find("a").text.strip()
+            model_dict["title"] = title
+            url = tr.find("a")["href"]
+            task = asyncio.create_task(craw_match(url))
+            tasks.append(task)
+            if tr.find("span"):
+                game_date = tr.find("span").text.strip()
+                game_date = datetime.strptime(game_date, "%B %d, %Y").date()
+                model_dict["game_date"] = game_date
+            if tr.find(
+                "td",
+                "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
+            ):
+                location = tr.find(
+                    "td",
+                    "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
+                ).text.strip()
+                model_dict["location"] = location
+        print("--------")
+        print(model_dict)
+        print("--------")
+    
+    await asyncio.gather(*tasks)
+
+
+async def craw_match(url: str = None) -> dict:
+    req = requests.get(url).text
+    time.sleep(1)
+    html = BeautifulSoup(req, "html.parser")
+    # Process the match data and save to database
+    # ...
+
+def execute_async_craw_game():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(craw_game())
+
+dag = DAG(
+    dag_id='async_crawling_dag',
+    start_date=datetime(2023, 1, 1),
+    schedule_interval='0 0 * * *'  # Runs once a day at midnight
+)
+
+execute_async_craw_game_task = PythonOperator(
+    task_id='execute_async_craw_game_task',
+    python_callable=execute_async_craw_game,
+    dag=dag
+)
+
+"""
 
 
 def inch_to_cm(data: str, is_reach=False):
@@ -72,11 +133,45 @@ def craw_fighter_info():
             model_dict["draw"] = (
                 0 if fighter_info_list[9] == "--" else fighter_info_list[9]
             )
-            # print("--------")
+            print("--------")
+            print(model_dict)
+            print("--------")
 
 
 def craw_game():
     url = f"http://www.ufcstats.com/statistics/events/completed?page=all"
+    req = requests.get(url).text
+    time.sleep(1)
+    html = BeautifulSoup(req, "html.parser")
+
+    for tr in html.find_all("tr", "b-statistics__table-row"):
+        # save to db
+        model_dict = {}
+        if tr.find("a"):
+            title = tr.find("a").text.strip()
+            model_dict["title"] = title
+            url = tr.find("a")["href"]
+            craw_match(url)
+            if tr.find("span"):
+                game_date = tr.find("span").text.strip()
+                game_date = datetime.strptime(game_date, "%B %d, %Y").date()
+                model_dict["game_date"] = game_date
+            if tr.find(
+                "td",
+                "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
+            ):
+                location = tr.find(
+                    "td",
+                    "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
+                ).text.strip()
+                model_dict["location"] = location
+        print("--------")
+        print(model_dict)
+        print("--------")
+
+
+def craw_match(url: str = None) -> dict:
+    url = "http://www.ufcstats.com/event-details/aec273fcb765330d"
     req = requests.get(url).text
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
