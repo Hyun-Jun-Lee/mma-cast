@@ -1,4 +1,4 @@
-import time, requests, re
+import time, requests, re, time
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -136,12 +136,17 @@ def craw_fighter_info():
 
 
 def craw_game():
+    st = time.time()
+    print("st :", st)
     url = f"http://www.ufcstats.com/statistics/events/completed?page=all"
     req = requests.get(url).text
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
+    i = 0
 
     for td in html.find_all("tr", "b-statistics__table-row"):
+        print(f"{i}번째")
+        i += 1
         # save to db
         model_dict = {}
         if td.find("a"):
@@ -163,9 +168,12 @@ def craw_game():
                 ).text.strip()
                 model_dict["location"] = location
 
+    ed = time.time()
+    print("total time : ", ed - st)
+
 
 def craw_match(url: str = None) -> dict:
-    url = "http://www.ufcstats.com/event-details/aec273fcb765330d"
+    # url = "http://www.ufcstats.com/event-details/aec273fcb765330d"
     req = requests.get(url).text
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
