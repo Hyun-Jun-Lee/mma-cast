@@ -3,19 +3,32 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 
-async def craw_game(page: int):
-    url = "http://www.ufcstats.com/statistics/events/completed?page={page}"
+async def test():
+    url = "http://www.ufcstats.com/statistics/events/completed?page=all"
     req = requests.get(url).text
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
-    tasks = []
+    coroutines = [
+        asyncio.create_task(craw_match(url=i["href"]))
+        for i in html.find_all("a", "b-link b-link_style_black")
+    ]
+    # await asyncio.gather(*coroutines)
+
+
+async def craw_game(page: int):
+    print(f"페이지 : {page}")
+    url = "http://www.ufcstats.com/statistics/events/completed?page=all"
+    req = requests.get(url).text
+    time.sleep(1)
+    html = BeautifulSoup(req, "html.parser")
+    # tasks = []
     for tr in html.find_all("tr", "b-statistics__table-row"):
         model_dict = {}
         if tr.find("a"):
             title = tr.find("a").text.strip()
             model_dict["title"] = title
             url = tr.find("a")["href"]
-            task = asyncio.create_task(craw_match(url))
+            # task = asyncio.create_task(craw_match(url))
             # tasks.append(task)
             if tr.find("span"):
                 game_date = tr.find("span").text.strip()
@@ -30,12 +43,13 @@ async def craw_game(page: int):
                     "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
                 ).text.strip()
                 model_dict["location"] = location
-        await task
+    # await task
 
     # await asyncio.gather(*tasks)
 
 
 async def craw_match(url: str = None) -> dict:
+    print(f"url: {url}")
     req = requests.get(url).text
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
@@ -75,16 +89,27 @@ async def craw_match(url: str = None) -> dict:
         model_dict["finish_time"] = infos[15]
 
 
-def execute_async_craw_game():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(craw_game())
-
-
 def execute_async_crawl_game():
     st = time.time()
     loop = asyncio.get_event_loop()
-    coroutines = [craw_game(page) for page in range(1, 25)]
+    coroutines = [craw_game(page) for page in range(1, 26)]
     loop.run_until_complete(asyncio.wait(coroutines))
+    ed = time.time()
+    print("Total time:", ed - st)
+
+
+# async def execute_async_crawl_game():
+#     st = time.time()
+#     coroutines = [craw_game(page) for page in range(1, 26)]
+#     await asyncio.gather(*coroutines)
+#     ed = time.time()
+#     print("Total time:", ed - st)
+
+
+def execute_async_craw_game():
+    st = time.time()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(test())
     ed = time.time()
     print("Total time:", ed - st)
 
