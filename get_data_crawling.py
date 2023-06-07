@@ -133,9 +133,6 @@ def craw_fighter_info():
             model_dict["draw"] = (
                 0 if fighter_info_list[9] == "--" else fighter_info_list[9]
             )
-            print("--------")
-            print(model_dict)
-            print("--------")
 
 
 def craw_game():
@@ -144,30 +141,27 @@ def craw_game():
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
 
-    for tr in html.find_all("tr", "b-statistics__table-row"):
+    for td in html.find_all("tr", "b-statistics__table-row"):
         # save to db
         model_dict = {}
-        if tr.find("a"):
-            title = tr.find("a").text.strip()
+        if td.find("a"):
+            title = td.find("a").text.strip()
             model_dict["title"] = title
-            url = tr.find("a")["href"]
+            url = td.find("a")["href"]
             craw_match(url)
-            if tr.find("span"):
-                game_date = tr.find("span").text.strip()
+            if td.find("span"):
+                game_date = td.find("span").text.strip()
                 game_date = datetime.strptime(game_date, "%B %d, %Y").date()
                 model_dict["game_date"] = game_date
-            if tr.find(
+            if td.find(
                 "td",
                 "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
             ):
-                location = tr.find(
+                location = td.find(
                     "td",
                     "b-statistics__table-col b-statistics__table-col_style_big-top-padding",
                 ).text.strip()
                 model_dict["location"] = location
-        print("--------")
-        print(model_dict)
-        print("--------")
 
 
 def craw_match(url: str = None) -> dict:
@@ -175,3 +169,37 @@ def craw_match(url: str = None) -> dict:
     req = requests.get(url).text
     time.sleep(1)
     html = BeautifulSoup(req, "html.parser")
+    match_info = [
+        i.get_text(strip=True).split(":")[1]
+        for i in html.find_all("li", class_="b-list__box-list-item")
+    ]
+    main_event = html.find("span", "b-content__title-highlight").text.strip()
+    match_date = datetime.strptime(match_info[0], "%B %d, %Y").date()
+    match_loc = match_info[1]
+
+    for td in html.find_all(
+        "tr",
+        "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click",
+    ):
+        # save to db
+        model_dict = {
+            "main_event": main_event,
+            "match_date": match_date,
+            "match_loc": match_loc,
+        }
+        infos = [
+            i.text.strip() for i in td.find_all("p", "b-fight-details__table-text")
+        ]
+        model_dict["winner"] = infos[1]
+        model_dict["winner_str"] = infos[5]
+        model_dict["winner_td"] = infos[7]
+        model_dict["winner_sub"] = infos[9]
+        model_dict["looser"] = infos[2]
+        model_dict["looser_str"] = infos[6]
+        model_dict["looser_td"] = infos[8]
+        model_dict["looser_sub"] = infos[10]
+        model_dict["weight_class"] = infos[11]
+        model_dict["finish_method"] = infos[12]
+        model_dict["finish_tech"] = infos[13]
+        model_dict["finish_round"] = infos[14]
+        model_dict["finish_time"] = infos[15]
