@@ -268,3 +268,4 @@ pyrightconfig.json
 *.json
 *.csv
 venv
+algo*.py
