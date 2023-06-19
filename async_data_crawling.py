@@ -73,26 +73,24 @@ async def craw_game():
             await asyncio.gather(*coroutines)
 
 
-async def execute_async_craw_game():
-    st = time.time()
-    await craw_game()
-    ed = time.time()
-    print("총 시간:", ed - st)
+# def run_craw_game():
+#     asyncio.run(craw_game())
+
+
+# async def execute_async_craw_game():
+#     st = time.time()
+#     await craw_game()
+#     ed = time.time()
+#     print("총 시간:", ed - st)
 
 
 def run_craw_game():
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(execute_async_craw_game())
+    loop.run_until_complete(craw_game())
 
 
-# dag = DAG(
-#     dag_id='async_crawling_dag',
-#     start_date=datetime(2023, 1, 1),
-#     schedule_interval='0 0 * * *'  # Runs once a day at midnight
-# )
-
-# execute_async_craw_game_task = PythonOperator(
-#     task_id='execute_async_craw_game_task',
-#     python_callable=execute_async_craw_game,
-#     dag=dag
-# )
+if __name__ == "__main__":
+    st = time.time()
+    run_craw_game()
+    ed = time.time()
+    print("총 시간:", ed - st)
