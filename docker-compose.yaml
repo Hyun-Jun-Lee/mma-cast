@@ -4,19 +4,22 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.3.3}
+  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.3.3}
+  build:
+    context: .
+    dockerfile: airflow-docker
   # build: .
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: mysql+pymysql://root:${DATABASE_PASSWORD}@mysql/airflow
     # For backward compatibility, with Airflow <2.3
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: mysql+pymysql://root:${DATABASE_PASSWORD}@mysql/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+mysql+mysqlconnector://root:${DATABASE_PASSWORD}@mysql/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
   volumes:
@@ -41,8 +44,8 @@ services:
       - ./app:/app
     stdin_open: true
     tty: true
-    command: >
-      sh -c "uvicorn main:app --host 0.0.0.0 --prot 8000"
+    # command: >
+    #   sh -c "uvicorn main:app --host 0.0.0.0 --prot 8000"
     env_file:
       - ".env"
     environment:
@@ -53,6 +56,7 @@ services:
     restart: always
     volumes:
       - mysql-db-data:/var/lib/mysql
+      - ./mysql_init/:/docker-entrypoint-initdb.d/
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
     environment:
       - MYSQL_DATABASE=${DATABASE_NAME}
