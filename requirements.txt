@@ -36,3 +36,4 @@ websockets==11.0.3
 celery
 django-celery-beat
 gevent
+alembic

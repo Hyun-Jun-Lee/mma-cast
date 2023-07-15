@@ -269,3 +269,4 @@ pyrightconfig.json
 *.csv
 venv
 algo*.py
+migrations/
