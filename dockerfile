@@ -17,7 +17,7 @@ RUN python -m venv /py && \
     apt-get clean -y && \
     apt-get update -y && \
     apt-get install -y pkg-config libmariadb-dev libmariadbclient-dev build-essential && \
-    /py/bin/pip install -r requirements.txt
+    /py/bin/pip install -r /app/requirements.txt
 
 # Expose port
 EXPOSE 8000
