@@ -14,7 +14,9 @@ RUN python -m venv /py && \
     . /py/bin/activate && \ 
     /py/bin/pip install --upgrade pip && \
     apt-get clean -y && \
+    apt-get clean -y && \
     apt-get update -y && \
+    apt-get install -y pkg-config libmariadb-dev libmariadbclient-dev build-essential && \
     /py/bin/pip install -r requirements.txt
 
 # Expose port
