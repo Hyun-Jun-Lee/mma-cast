@@ -1,24 +1,30 @@
-from logging.config import fileConfig
+import os, sys
 
-from sqlalchemy import engine_from_config
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from logging.config import fileConfig
+from sqlalchemy import create_engine
 from sqlalchemy import pool
-import config
 from alembic import context
+from db.base import Base
+
+
+parent_dir = os.path.abspath(os.path.join(os.getcwd(), "..", ".."))
+
+sys.path.append(parent_dir)
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -27,7 +33,15 @@ target_metadata = None
 
 
 def get_url():
-    return f"mysql://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}:{config.DATABASE_PORT}/{config.DATABASE_NAME}?charset=utf8"
+    from app.config import (
+        DATABASE_HOST,
+        DATABASE_NAME,
+        DATABASE_PASSWORD,
+        DATABASE_PORT,
+        DATABASE_USER,
+    )
+
+    return f"mysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}?charset=utf8"
 
 
 def run_migrations_offline() -> None:
@@ -63,9 +77,8 @@ def run_migrations_online():
     """
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
-    connectable = engine_from_config(
-        configuration,
-        prefix="sqlalchemy.",
+    connectable = create_engine(
+        get_url(),
         poolclass=pool.NullPool,
     )
 
