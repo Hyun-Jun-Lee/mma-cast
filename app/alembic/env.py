@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import pool
 from alembic import context
 from db.base import Base
-from db import models
+from db.models.game import *
 
 
 def get_url():
