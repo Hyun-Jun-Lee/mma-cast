@@ -9,7 +9,7 @@ DATABASE_PORT = os.environ.get("DATABASE_PORT")
 DATABASE_USER = os.environ.get("DATABASE_USER")
 DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
 DATABASE_NAME = os.environ.get("DATABASE_NAME")
-
+WAREHOUSE_DB = os.environ.get("WAREHOUSE_DB")
 # celery
 CELERY_NAME = os.environ.get("CELERY_NAME")
 CELERY_POOL = os.environ.get("CELERY_POOL")
