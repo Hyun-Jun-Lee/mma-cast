@@ -7,9 +7,8 @@ from sqlalchemy.ext.declarative import as_declarative, declared_attr
 
 @as_declarative()
 class Base:
-    id: Any
     __name__: str
-
+    id = Column(Integer, primary_key=True)
     created_time = Column(DateTime, default=func.now(), nullable=True)
     modified_time = Column(DateTime, default=None, onupdate=func.now(), nullable=True)
 

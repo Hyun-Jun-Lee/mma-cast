@@ -1,2 +1,2 @@
-from . import fighter
-from . import game
+from .fighter import *
+from .game import *
