@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class DataFighter(BaseModel):
+class DataFighterSchema(BaseModel):
     web_fighter_id: str = None
     first_name: str = None
     last_name: str = None
@@ -16,7 +16,7 @@ class DataFighter(BaseModel):
     draw: int = None
 
 
-class DataMatch(BaseModel):
+class DataMatchSchema(BaseModel):
     main_event: str = None
     match_date: datetime = None
     match_loc: str = None
