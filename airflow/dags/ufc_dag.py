@@ -2,7 +2,10 @@ from datetime import datetime, timedelta
 import airflow
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from async_data_crawling import run_craw_game, run_craw_fighter, xcom_wrapper
+from async_data_crawling import run_craw_game, run_craw_fighter
+from db.session import create_table
+
+create_table()
 
 default_args = {
     "owner": "mma_cast",
@@ -35,12 +38,5 @@ crawl_fighter_task = PythonOperator(
     dag=dag,
 )
 
-save_data_to_database_task = PythonOperator(
-    task_id="save_data_to_database",
-    python_callable=xcom_wrapper,
-    provide_context=True,
-    dag=dag,
-)
 
-
-crawl_game_task >> crawl_fighter_task >> save_data_to_database_task
+crawl_game_task >> crawl_fighter_task

@@ -23,6 +23,7 @@ class Base:
 
 
 class DataFighter(Base):
+    id = Column(Integer, primary_key=True)
     web_fighter_id = Column(String(50), nullable=True)
     first_name = Column(String(50), nullable=True)
     last_name = Column(String(50), nullable=True)
@@ -37,6 +38,7 @@ class DataFighter(Base):
 
 
 class DataMatch(Base):
+    id = Column(Integer, primary_key=True)
     main_event = Column(String(50), nullable=True)
     match_date = Column(DateTime, nullable=True)
     match_loc = Column(String(50), nullable=True)
