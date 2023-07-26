@@ -1,7 +1,8 @@
 import time, requests, re, asyncio, aiohttp
+from typing import List
 from bs4 import BeautifulSoup
 from datetime import datetime
-from db.schemas import DataFighterSchema, DataMatchSchema
+from db.models import DataFighter, DataMatch
 from db.session import get_db
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
@@ -163,33 +164,29 @@ async def craw_game():
 def run_craw_game():
     loop = asyncio.get_event_loop()
     match_data = loop.run_until_complete(craw_game())
-    return match_data
+    save_data_to_database(match_data=match_data)
 
 
 def run_craw_fighter():
     loop = asyncio.get_event_loop()
     match_data = loop.run_until_complete(craw_fighter())
-    return match_data
+    save_data_to_database(match_data=match_data)
 
 
-def save_data_to_database(fighters_data, match_data):
-    fighter_objects = [
-        DataFighterSchema(**fighter)
-        for fighter_list in fighters_data
-        for fighter in fighter_list
-    ]
-    match_objects = [
-        DataMatchSchema(**match) for match_list in match_data for match in match_list
-    ]
-    all_objects = fighter_objects + match_objects
+def save_data_to_database(
+    fighters_data: List[dict] = None, match_data: List[dict] = None
+):
+    if fighters_data:
+        data_list = [
+            DataFighter(**fighter)
+            for fighter_list in fighters_data
+            for fighter in fighter_list
+        ]
+    elif match_data:
+        data_list = [
+            DataMatch(**match) for match_list in match_data for match in match_list
+        ]
 
     with get_db() as db_session:
-        db_session.bulk_save_objects(all_objects)
+        db_session.bulk_save_objects(data_list)
         db_session.commit()
-
-
-def xcom_wrapper(**kwargs):
-    ti = kwargs["ti"]
-    fighters_data = ti.xcom_pull(task_ids="craw_fighter")
-    match_data = ti.xcom_pull(task_ids="craw_game")
-    save_data_to_database(fighters_data, match_data)
