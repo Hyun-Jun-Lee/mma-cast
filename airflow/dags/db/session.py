@@ -2,7 +2,8 @@ from typing import Generator
 import os
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
-from dags.db.models import DataFighter, DataMatch
+from db.models import DataFighter, DataMatch
+from contextlib import contextmanager
 
 # SQLALCHEMY_DATABASE_URL = f"mysql://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}:{config.DATABASE_PORT}/{config.WAREHOUSE_DB}?charset=utf8"
 
@@ -33,12 +34,13 @@ def create_table():
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+@contextmanager
 def get_db() -> Generator:
     """
     호출되면 DB 연결하고 작업 완료되면 close
     """
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         yield db
     finally:
         db.close()

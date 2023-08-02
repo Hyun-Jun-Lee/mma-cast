@@ -31,5 +31,5 @@ class DataMatchSchema(BaseModel):
     weight_class: str = None
     finish_method: str = None
     finish_tech: str = None
-    finish_round: int = None
+    finish_round: str = None
     finish_time: str = None

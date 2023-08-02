@@ -36,6 +36,7 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
     await asyncio.sleep(1)
     html = BeautifulSoup(req, "html.parser")
 
+    fighter_list = []
     for row in html.find_all("tr"):
         model_dict = {}
         try:
@@ -77,6 +78,8 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
             model_dict["draw"] = (
                 0 if fighter_info_list[9] == "--" else fighter_info_list[9]
             )
+            fighter_list.append(model_dict)
+    return fighter_list
 
 
 async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
@@ -101,7 +104,7 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
                 else None
             )
             match_loc = match_info[1] if match_info else None
-
+            match_list = []
             for td in html.find_all(
                 "tr",
                 "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click",
@@ -129,6 +132,8 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
                 model_dict["finish_tech"] = infos[13]
                 model_dict["finish_round"] = infos[14]
                 model_dict["finish_time"] = infos[15]
+                match_list.append(model_dict)
+    return match_list
 
 
 async def craw_fighter():
@@ -142,7 +147,8 @@ async def craw_fighter():
             for alphabet in range(ord("a"), ord("z") + 1)
         ]
 
-        await asyncio.gather(*coroutines_fighter_info)
+        res = await asyncio.gather(*coroutines_fighter_info)
+    return res
 
 
 async def craw_game():
@@ -158,7 +164,8 @@ async def craw_game():
                 for i in html.find_all("a", "b-link b-link_style_black")
             ]
 
-            await asyncio.gather(*coroutines)
+            res = await asyncio.gather(*coroutines)
+    return res
 
 
 def run_craw_game():
@@ -169,24 +176,34 @@ def run_craw_game():
 
 def run_craw_fighter():
     loop = asyncio.get_event_loop()
-    match_data = loop.run_until_complete(craw_fighter())
-    save_data_to_database(match_data=match_data)
+    fighters_data = loop.run_until_complete(craw_fighter())
+    save_data_to_database(fighters_data=fighters_data)
 
 
 def save_data_to_database(
     fighters_data: List[dict] = None, match_data: List[dict] = None
 ):
-    if fighters_data:
-        data_list = [
-            DataFighter(**fighter)
+    data_list = (
+        [
+            DataFighter(**{k: (None if v == "" else v) for k, v in fighter.items()})
             for fighter_list in fighters_data
             for fighter in fighter_list
         ]
-    elif match_data:
-        data_list = [
-            DataMatch(**match) for match_list in match_data for match in match_list
+        if fighters_data
+        else [
+            # For DataMatch
+            DataMatch(**{k: (None if v == "" else v) for k, v in match.items()})
+            for match_list in match_data
+            for match in match_list
         ]
+    )
 
     with get_db() as db_session:
-        db_session.bulk_save_objects(data_list)
-        db_session.commit()
+        try:
+            db_session.bulk_save_objects(data_list)
+            db_session.commit()
+        except Exception as e:
+            print(f"Error saving data: {e}")
+            db_session.rollback()
+        finally:
+            db_session.close()
