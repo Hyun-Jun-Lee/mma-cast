@@ -270,3 +270,4 @@ pyrightconfig.json
 venv
 algo*.py
 app/alembic/versions
+logging/

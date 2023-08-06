@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from db.models import DataFighter, DataMatch
 from db.session import get_db
+from log import logger
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
 
@@ -168,6 +169,30 @@ async def craw_game():
     return res
 
 
+def delete_all_fighters_data():
+    with get_db() as db_session:
+        try:
+            db_session.query(DataFighter).delete()
+            db_session.commit()
+        except Exception as e:
+            logger.error(f"Error deleting fighters data: {e}")
+            db_session.rollback()
+        finally:
+            db_session.close()
+
+
+def delete_all_matches_data():
+    with get_db() as db_session:
+        try:
+            db_session.query(DataMatch).delete()
+            db_session.commit()
+        except Exception as e:
+            logger.error(f"Error deleting matches data: {e}")
+            db_session.rollback()
+        finally:
+            db_session.close()
+
+
 def run_craw_game():
     loop = asyncio.get_event_loop()
     match_data = loop.run_until_complete(craw_game())
@@ -183,27 +208,28 @@ def run_craw_fighter():
 def save_data_to_database(
     fighters_data: List[dict] = None, match_data: List[dict] = None
 ):
-    data_list = (
-        [
+    if fighters_data:
+        delete_all_fighters_data()
+        data_list = [
             DataFighter(**{k: (None if v == "" else v) for k, v in fighter.items()})
             for fighter_list in fighters_data
             for fighter in fighter_list
         ]
-        if fighters_data
-        else [
-            # For DataMatch
+    elif match_data:
+        delete_all_matches_data()
+        data_list = [
             DataMatch(**{k: (None if v == "" else v) for k, v in match.items()})
             for match_list in match_data
             for match in match_list
         ]
-    )
-
+    else:
+        return
     with get_db() as db_session:
         try:
             db_session.bulk_save_objects(data_list)
             db_session.commit()
         except Exception as e:
-            print(f"Error saving data: {e}")
+            logger.error(f"Error bulk save data: {e}")
             db_session.rollback()
         finally:
             db_session.close()
