@@ -23,11 +23,17 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW_MYSQL_ALCHEMY: mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${WAREHOUSE_DB}?charset=utf8
+    AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
+    AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
+    PYTHONPATH: /app/airflow 
+
+
     
   volumes:
-    - ./airflow/dags:/opt/airflow/dags
-    - ./airflow/logs:/opt/airflow/logs
-    - ./airflow/plugins:/opt/airflow/plugins
+    - ./app:/opt/airflow/app 
+    - ./app/airflow/dags:/opt/airflow/dags
+    - ./app/airflow/logs:/opt/airflow/logs
+    - ./app/airflow/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
