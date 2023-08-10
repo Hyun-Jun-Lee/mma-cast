@@ -64,4 +64,4 @@ def create_ware_table():
         if inspector.has_table(table.__tablename__):
             pass
         else:
-            table.__table__.create(engine)
+            table.__table__.create(ware_engine)

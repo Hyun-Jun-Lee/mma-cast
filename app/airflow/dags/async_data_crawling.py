@@ -2,8 +2,8 @@ import time, requests, re, asyncio, aiohttp
 from typing import List
 from bs4 import BeautifulSoup
 from datetime import datetime
-from db.models import DataFighter, DataMatch
-from db.session import get_db
+from app.db.models.data import DataFighter, DataMatch
+from app.db.session import get_ware_db
 from log import logger
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
@@ -170,7 +170,7 @@ async def craw_game():
 
 
 def delete_all_fighters_data():
-    with get_db() as db_session:
+    with get_ware_db() as db_session:
         try:
             db_session.query(DataFighter).delete()
             db_session.commit()
@@ -182,7 +182,7 @@ def delete_all_fighters_data():
 
 
 def delete_all_matches_data():
-    with get_db() as db_session:
+    with get_ware_db() as db_session:
         try:
             db_session.query(DataMatch).delete()
             db_session.commit()
@@ -224,7 +224,8 @@ def save_data_to_database(
         ]
     else:
         return
-    with get_db() as db_session:
+
+    with get_ware_db() as db_session:
         try:
             db_session.bulk_save_objects(data_list)
             db_session.commit()
