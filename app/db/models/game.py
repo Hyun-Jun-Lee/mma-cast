@@ -10,6 +10,8 @@ class Title(Base):
     game_date = Column(Date, nullable=True)
     url = Column(String(50), nullable=True)
 
+    matches = relationship("Match", back_populates="title")
+
 
 class Match(Base):
     title_id = Column(Integer, ForeignKey(Title.__tablename__ + ".id"), nullable=False)
@@ -27,6 +29,7 @@ class Match(Base):
     title = relationship("Title", back_populates="matches")
     winner = relationship("Fighter", foreign_keys=[winner_id], back_populates="winners")
     loser = relationship("Fighter", foreign_keys=[loser_id], back_populates="losers")
+    stats = relationship("MatchStat", back_populates="match")
 
 
 class MatchStat(Base):

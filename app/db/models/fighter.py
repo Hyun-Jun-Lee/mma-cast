@@ -17,6 +17,14 @@ class Fighter(Base):
     reach = Column(Integer, nullable=True)
     stance = Column(String(50), nullable=True)
 
+    winners = relationship(
+        "Match", foreign_keys="Match.winner_id", back_populates="winner"
+    )
+    losers = relationship(
+        "Match", foreign_keys="Match.loser_id", back_populates="loser"
+    )
+    games = relationship("MatchStat", back_populates="fighter")
+
 
 class StrikingStat(Base):
     fighter_id = Column(
