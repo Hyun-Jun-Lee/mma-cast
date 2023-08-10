@@ -9,6 +9,8 @@ x-airflow-common:
     context: .
     dockerfile: airflow-docker
   # build: .
+  env_file:
+    - ".env"
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -23,9 +25,7 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW_MYSQL_ALCHEMY: mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${WAREHOUSE_DB}?charset=utf8
-    AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
-    AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
-    PYTHONPATH: /app/airflow 
+    PYTHONPATH: /opt/airflow 
 
 
     
