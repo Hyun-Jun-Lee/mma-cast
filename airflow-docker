@@ -1,5 +1,5 @@
-FROM apache/airflow:2.5.3
+FROM apache/airflow:2.5.3-python3.9
 RUN pip install --user --upgrade pip
-RUN pip install --no-cache-dir --user install pymysql
-RUN pip install --no-cache-dir --user install sqlalchemy
-RUN pip install --no-cache-dir --user install pydantic
+RUN pip install --no-cache-dir --user pymysql
+RUN pip install --no-cache-dir --user sqlalchemy
+RUN pip install --no-cache-dir --user pydantic==1.10.8
