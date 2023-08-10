@@ -1,8 +1,8 @@
 from datetime import datetime
-from pydantic import BaseModel
+from base import CoreSchemea
 
 
-class DataFighterSchema(BaseModel):
+class DataFighterSchema(CoreSchemea):
     web_fighter_id: str = None
     first_name: str = None
     last_name: str = None
@@ -16,7 +16,7 @@ class DataFighterSchema(BaseModel):
     draw: int = None
 
 
-class DataMatchSchema(BaseModel):
+class DataMatchSchema(CoreSchemea):
     main_event: str = None
     match_date: datetime = None
     match_loc: str = None

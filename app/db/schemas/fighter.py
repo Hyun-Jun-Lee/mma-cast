@@ -1,8 +1,7 @@
-from pydantic import BaseModel
+from base import CoreSchemea
 
 
-class Fighter(BaseModel):
-    id: int
+class Fighter(CoreSchemea):
     fighter_id: str = None
     age: int = None
     first_name: str = None
@@ -62,8 +61,7 @@ class Fighter(BaseModel):
         pass
 
 
-class StrikingStat(BaseModel):
-    id: int
+class StrikingStat(CoreSchemea):
     fighter_id: int
     total_strikes_attempts: int = None
     total_strikes_landed: int = None
@@ -95,8 +93,7 @@ class StrikingStat(BaseModel):
         return acc
 
 
-class GrapplingStat(BaseModel):
-    id: int
+class GrapplingStat(CoreSchemea):
     fighter_id: int
     takedowns_landed: int = None
     takedowns_attempts: int = None

@@ -1,4 +1,4 @@
-from typing import Optional, Union, Literal, Any, Type, ClassVar
+from typing import Optional, Any, Type, ClassVar
 from sqlalchemy import Column, Integer, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
@@ -24,21 +24,10 @@ class Base:
         }
 
 
-class CoreSchmea(BaseModel):
+class CoreSchemea(BaseModel):
     id: Optional[Any]
     model_cls: ClassVar[Type[Base]] = None
     model: Type[Base] = None
-
-    @classmethod
-    def from_model(cls, model: Base):
-        md = model.to_dict()
-        for att_name in dir(model):
-            att = getattr(model, att_name)
-            if issubclass(type(att), Base):
-                md[att_name] = get_schema_from_model_cls(type(att))(**att.to_dict())
-        return_schema = cls(**md)
-        return_schema.model = model
-        return return_schema
 
     def to_model(self):
         it = self.dict()

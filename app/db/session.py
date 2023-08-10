@@ -4,11 +4,9 @@ from typing import Generator
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
-from app.core.config import get_settings, Settings
 from app.db.models.data import DataFighter, DataMatch
+from app import config
 
-
-config: Settings = get_settings()
 
 SQLALCHEMY_DATABASE_URL = f"mysql://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}:{config.DATABASE_PORT}/{config.DATABASE_NAME}?charset=utf8"
 WAREHOUSE_DATABASE_URL = os.environ.get("AIRFLOW_MYSQL_ALCHEMY")

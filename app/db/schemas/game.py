@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
+from base import CoreSchemea
 from datetime import date
 
 
-class TitleBase(BaseModel):
+class TitleBase(CoreSchemea):
     title: str = None
     location: str = None
     game_date: date = None
@@ -14,7 +14,7 @@ class Title(TitleBase):
         orm_mode = True
 
 
-class MatchBase(BaseModel):
+class MatchBase(CoreSchemea):
     title_id: int
     winner_id: int
     loser_id: int
@@ -29,7 +29,7 @@ class Match(MatchBase):
         orm_mode = True
 
 
-class MatchStatBase(BaseModel):
+class MatchStatBase(CoreSchemea):
     fighter_id: int
     match_id: int
 
