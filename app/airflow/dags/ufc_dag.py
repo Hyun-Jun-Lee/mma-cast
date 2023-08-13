@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import airflow
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from async_data_crawling import run_craw_game, run_craw_fighter
+from ufc_data_crawling import run_craw_game, run_craw_fighter
 from app.db.session import create_ware_table
 
 create_ware_table()
