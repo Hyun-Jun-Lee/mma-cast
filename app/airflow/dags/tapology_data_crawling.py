@@ -54,7 +54,9 @@ details_two_columns_div = html.find("div", id="stats")  # id를 사용하여 요
 
 span_tags = details_two_columns_div.find_all("span")
 
-span_texts = [tag.text for tag in span_tags]
+span_texts = [
+    tag.text.replace("\n", "") if "N/A" not in tag.text else None for tag in span_tags
+]
 
 print(span_texts)
 
@@ -80,7 +82,7 @@ async def weight_classes():
 sample = [
     "정찬성, Jung Chan Sung",
     "17-7-0 (Win-Loss-Draw)",
-    "\nThe Korean Zombie\n",
+    "The Korean Zombie",
     "1 Loss",
     "36",
     "1987.03.17",
@@ -88,15 +90,15 @@ sample = [
     "in",
     "UFC",
     "Featherweight",
-    "\n144.5 lbs\n",
+    "144.5 lbs",
     "Fight Ready MMA",
     "5'7\" (171cm)",
     '72.0" (183cm)',
     "$524,000 USD",
-    "\nPohang, South Korea\n",
-    "\nPohang, South Korea\n",
-    "\nEddie Cha\n",
-    "\nN/A\n",
+    "Pohang, South Korea",
+    "Pohang, South Korea",
+    "Eddie Cha",
+    None,
 ]
 
 
@@ -109,7 +111,10 @@ async def fighters_detail(url):
     html = BeautifulSoup(html_content, "html.parser")
     details_two_columns_div = html.find("div", id="stats")  # id를 사용하여 요소 찾기
 
-    span_texts = [tag.text if "N/A" not in tag.text else None for tag in span_tags]
+    span_texts = [
+        tag.text.replace("\n", "") if "N/A" not in tag.text else None
+        for tag in span_tags
+    ]
 
     span_texts = [tag.text for tag in span_tags]
     if span_texts:
@@ -118,6 +123,23 @@ async def fighters_detail(url):
             if "," in span_texts[0]
             else span_texts[0].replace(" ", "_")
         )
+        pro_mma_recoad = span_texts[1].split(" ")[0]
+        nickname = span_texts[2].replace(" ", "_")
+        current_streak = span_texts[3]
+        age = span_texts[4]
+        birth = span_texts[5]
+        last_fight = span_texts[6] + span_texts[7] + span_texts[8]
+        weight_class = span_texts[9]
+        last_weigh_in = span_texts[10]
+        affiliation = span_texts[6]
+        height = span_texts[6]
+        reach = span_texts[6]
+        career_earnings = span_texts[6]
+        born = span_texts[6]
+        fighting_outof = span_texts[6]
+        head_coach = span_texts[6]
+        other_coanees = span_texts[6]
+
         model_dict["name"] = span_texts[0]
         model_dict["pro_mma_record"] = span_texts[1]
         model_dict["nickname"] = span_texts[2] if span_texts[2] else None
