@@ -68,7 +68,7 @@ async def weight_classes():
                     html = BeautifulSoup(res, "html.parser")
                     res = html.find_all("table", "siteSearchResults")
                     coroutines = [
-                        fighters(url=a.get("href"))
+                        asyncio.create_task(fighters_detail(url=a.get("href")))
                         for table in res
                         for a in table.find_all("a")
                     ]
