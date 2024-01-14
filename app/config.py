@@ -9,7 +9,13 @@ DATABASE_PORT = os.environ.get("DATABASE_PORT")
 DATABASE_USER = os.environ.get("DATABASE_USER")
 DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
 DATABASE_NAME = os.environ.get("DATABASE_NAME")
-WAREHOUSE_DB = os.environ.get("WAREHOUSE_DB")
+
+# mongodb
+RAW_DB_USER = os.environ.get("RAW_DB_USER")
+RAW_DB_PASSWORD = os.environ.get("RAW_DB_PASSWORD")
+RAW_DB_NAME = os.environ.get("RAW_DB_NAME")
+CLUSTER_NAME = os.environ.get("CLUSTER_NAME")
+
 # celery
 CELERY_NAME = os.environ.get("CELERY_NAME")
 CELERY_POOL = os.environ.get("CELERY_POOL")
