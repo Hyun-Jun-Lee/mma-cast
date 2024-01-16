@@ -1,4 +1,4 @@
-FROM amd64/python:3.9-slim-buster
+FROM amd64/python:3.10-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -10,14 +10,11 @@ COPY ./app /app
 WORKDIR /app
 
 # Install dependencies
-RUN python -m venv /py && \
-    . /py/bin/activate && \ 
-    /py/bin/pip install --upgrade pip && \
-    apt-get clean -y && \
+RUN pip install --upgrade pip && \
     apt-get clean -y && \
     apt-get update -y && \
-    apt-get install -y pkg-config libmariadb-dev libmariadbclient-dev build-essential && \
-    /py/bin/pip install -r /app/requirements.txt
+    apt-get install -y pkg-config libpq-dev libmariadb-dev build-essential && \
+    pip install -r /app/requirements.txt
 
 # Expose port
 EXPOSE 8000
