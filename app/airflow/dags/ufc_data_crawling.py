@@ -67,8 +67,7 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
 
         fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
         if fighter_info_list:
-            model_dict["first_name"] = fighter_info_list[0]
-            model_dict["last_name"] = fighter_info_list[1]
+            model_dict["name"] = fighter_info_list[0] + " " + fighter_info_list[1]
             model_dict["nickname"] = (
                 fighter_info_list[2] if fighter_info_list[2] else None
             )
@@ -87,13 +86,13 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
                 0 if fighter_info_list[6] == "--" else fighter_info_list[6]
             )
             model_dict["win"] = (
-                0 if fighter_info_list[7] == "--" else fighter_info_list[7]
+                0 if fighter_info_list[7] == "--" else int(fighter_info_list[7])
             )
             model_dict["lose"] = (
-                0 if fighter_info_list[8] == "--" else fighter_info_list[8]
+                0 if fighter_info_list[8] == "--" else int(fighter_info_list[8])
             )
             model_dict["draw"] = (
-                0 if fighter_info_list[9] == "--" else fighter_info_list[9]
+                0 if fighter_info_list[9] == "--" else int(fighter_info_list[9])
             )
             fighter_list.append(model_dict)
     return fighter_list
@@ -132,7 +131,6 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
                 "tr",
                 "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click",
             ):
-                # TODO :  save to db
                 model_dict = {
                     "main_event": main_event,
                     "match_date": match_date,
@@ -143,11 +141,11 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
                     for i in td.find_all("p", "b-fight-details__table-text")
                 ]
                 model_dict["winner"] = infos[1]
-                model_dict["winner_str"] = infos[5]
+                model_dict["winner_strike"] = infos[5]
                 model_dict["winner_td"] = infos[7]
                 model_dict["winner_sub"] = infos[9]
                 model_dict["looser"] = infos[2]
-                model_dict["looser_str"] = infos[6]
+                model_dict["looser_strike"] = infos[6]
                 model_dict["looser_td"] = infos[8]
                 model_dict["looser_sub"] = infos[10]
                 model_dict["weight_class"] = infos[11]
@@ -218,30 +216,27 @@ def run_craw_fighter():
     save_data_to_database(fighters_data=fighters_data)
 
 
-def delete_all_data():
-    with get_raw_db() as db:
-        try:
-            db["matches"].delete_many({})
-            db["fighters"].delete_many({})
-        except Exception as e:
-            logger.error(f"Error deleting matches data: {e}")
-
-
 def save_data_to_database(
     fighters_data: List[dict] = None, match_data: List[dict] = None
 ):
-    delete_all_data()
-
     if fighters_data:
-        # delete_all_fighters_data() 함수도 이와 유사한 방식으로 수정 필요
         data_list = [
             {k: (None if v == "" else v) for k, v in fighter.items()}
             for fighter_list in fighters_data
             for fighter in fighter_list
         ]
         with get_raw_db() as db:
-            db["fighters"].insert_many(data_list)
-            logger.warning(f"UFC fighters insert : {len(data_list)}")
+            try:
+                db["fighters"].delete_many({})
+            except Exception as e:
+                logger.error(f"Error deleting fighters data: {e}")
+
+            try:
+                db["fighters"].insert_many(data_list)
+                logger.warning(f"UFC fighters insert : {len(data_list)}")
+            except Exception as e:
+                logger.error(f"Error save fighters data: {e}")
+
     elif match_data:
         data_list = [
             {k: (None if v == "" else v) for k, v in match.items()}
@@ -249,7 +244,15 @@ def save_data_to_database(
             for match in match_list
         ]
         with get_raw_db() as db:
-            db["matches"].insert_many(data_list)
-            logger.warning(f"UFC matches insert : {len(data_list)}")
+            try:
+                db["fighters"].delete_many({})
+            except Exception as e:
+                logger.error(f"Error deleting match data: {e}")
+
+            try:
+                db["matches"].insert_many(data_list)
+                logger.warning(f"UFC matches insert : {len(data_list)}")
+            except Exception as e:
+                logger.error(f"Error save match data: {e}")
     else:
         return
