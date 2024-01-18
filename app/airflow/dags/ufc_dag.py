@@ -2,7 +2,11 @@ from datetime import datetime, timedelta
 import airflow
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from ufc_data_crawling import run_craw_game, run_craw_fighter
+from ufc_data_crawling import (
+    check_connection,
+    execute_fighter_info_fetching,
+    execute_match_info_fetching,
+)
 
 
 default_args = {
@@ -18,23 +22,30 @@ default_args = {
 }
 
 dag = DAG(
-    "crawling",
+    "ufc_crawling",
     default_args=default_args,
     description="crawling UFC Stat",
     schedule="0 9 * * *",
 )
 
+check_connection_task = PythonOperator(
+    task_id="check_mongodb_connection",
+    python_callable=check_connection,
+    dag=dag,
+)
+
+
 crawl_game_task = PythonOperator(
     task_id="crawl_games",
-    python_callable=run_craw_game,
+    python_callable=execute_match_info_fetching,
     dag=dag,
 )
 
 crawl_fighter_task = PythonOperator(
     task_id="crawl_fighter",
-    python_callable=run_craw_fighter,
+    python_callable=execute_fighter_info_fetching,
     dag=dag,
 )
 
 
-crawl_game_task >> crawl_fighter_task
+check_connection_task >> crawl_game_task >> crawl_fighter_task

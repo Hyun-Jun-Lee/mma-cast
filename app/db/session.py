@@ -12,7 +12,7 @@ escaped_username = quote_plus(config.RAW_DB_USER)
 escaped_password = quote_plus(config.RAW_DB_PASSWORD)
 
 SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}:{config.DATABASE_PORT}/{config.DATABASE_NAME}"
-MONGODB_DATABASE_URL = f"mongodb+srv://{escaped_username}:{escaped_password}@{config.CLUSTER_NAME}.7bddfbe.mongodb.net/{config.RAW_DB_NAME}?retryWrites=true&w=majority"
+MONGODB_DATABASE_URL = f"mongodb+srv://{escaped_username}:{escaped_password}@{config.CLUSTER_NAME}.mongodb.net/{config.RAW_DB_NAME}?retryWrites=true&w=majority"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,

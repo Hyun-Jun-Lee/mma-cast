@@ -2,10 +2,26 @@ import time, requests, re, asyncio, aiohttp
 from typing import List
 from bs4 import BeautifulSoup
 from datetime import datetime
+from pymongo import errors
+
 from app.db.session import get_raw_db
 from log import logger
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
+
+
+def check_connection():
+    try:
+        # get_raw_db 컨텍스트 매니저를 사용하여 MongoDB 연결 시도
+        with get_raw_db() as db:
+            # 서버 상태 확인
+            db.command("ping")
+            print("MongoDB connection: Success")
+    except errors.ServerSelectionTimeoutError as err:
+        # 연결 실패시 에러 메시지
+        print("MongoDB connection: Failed", err)
+        logger.error(f"Error when Connection db : {err}")
+        raise
 
 
 def inch_to_cm(data: str, is_reach=False):
@@ -39,7 +55,7 @@ def lbs_to_kg(data: str):
     return to_int
 
 
-async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
+async def fetch_fighter_info_async(session: aiohttp.ClientSession, url: str):
     """
     주어진 URL에서 파이터 정보를 비동기적으로 크롤링합니다.
 
@@ -95,10 +111,12 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
                 0 if fighter_info_list[9] == "--" else int(fighter_info_list[9])
             )
             fighter_list.append(model_dict)
+    print("tesettest", url, len(fighter_list))
+
     return fighter_list
 
 
-async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
+async def fetch_match_info_async(session: aiohttp.ClientSession, url: str) -> dict:
     """
     주어진 URL에서 매치 정보를 비동기적으로 크롤링합니다.
 
@@ -157,7 +175,7 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
     return match_list
 
 
-async def craw_fighter():
+async def fetch_all_fighters_info_async():
     """
     모든 알파벳에 대해 UFC 통계 사이트에서 파이터 정보를 비동기적으로 크롤링합니다.
 
@@ -168,7 +186,7 @@ async def craw_fighter():
     async with aiohttp.ClientSession() as session:
         coroutines_fighter_info = [
             asyncio.create_task(
-                craw_fighter_info(session, url_template.format(chr(alphabet)))
+                fetch_fighter_info_async(session, url_template.format(chr(alphabet)))
             )
             for alphabet in range(ord("a"), ord("z") + 1)
         ]
@@ -177,7 +195,7 @@ async def craw_fighter():
     return res
 
 
-async def craw_game():
+async def fetch_all_matches_info_async():
     """
     UFC 통계 사이트에서 완료된 모든 이벤트의 매치 정보를 비동기적으로 크롤링합니다.
 
@@ -192,7 +210,7 @@ async def craw_game():
             html = BeautifulSoup(res, "html.parser")
 
             coroutines = [
-                asyncio.create_task(craw_match(session, i["href"]))
+                asyncio.create_task(fetch_match_info_async(session, i["href"]))
                 for i in html.find_all("a", "b-link b-link_style_black")
             ]
 
@@ -200,19 +218,19 @@ async def craw_game():
     return res
 
 
-def run_craw_game():
+def execute_match_info_fetching():
     """
     크롤링한 게임 데이터를 저장하기 위해 `craw_game` 함수를 실행
     합니다. 실행 결과는 MongoDB에 저장됩니다.
     """
     loop = asyncio.get_event_loop()
-    match_data = loop.run_until_complete(craw_game())
+    match_data = loop.run_until_complete(fetch_all_matches_info_async())
     save_data_to_database(match_data=match_data)
 
 
-def run_craw_fighter():
+def execute_fighter_info_fetching():
     loop = asyncio.get_event_loop()
-    fighters_data = loop.run_until_complete(craw_fighter())
+    fighters_data = loop.run_until_complete(fetch_all_fighters_info_async())
     save_data_to_database(fighters_data=fighters_data)
 
 
