@@ -55,7 +55,9 @@ def lbs_to_kg(data: str):
     return to_int
 
 
-async def fetch_fighter_info_async(session: aiohttp.ClientSession, url: str):
+async def fetch_fighter_info_async(
+    session: aiohttp.ClientSession, url: str, semaphore: int
+):
     """
     주어진 URL에서 파이터 정보를 비동기적으로 크롤링합니다.
 
@@ -63,10 +65,10 @@ async def fetch_fighter_info_async(session: aiohttp.ClientSession, url: str):
     :param url: 크롤링할 URL.
     :return: 크롤링된 파이터 정보 리스트.
     """
-    async with session.get(url) as response:
+    async with semaphore, session.get(url) as response:
         req = await response.text()
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(3)
     html = BeautifulSoup(req, "html.parser")
 
     fighter_list = []
@@ -111,7 +113,6 @@ async def fetch_fighter_info_async(session: aiohttp.ClientSession, url: str):
                 0 if fighter_info_list[9] == "--" else int(fighter_info_list[9])
             )
             fighter_list.append(model_dict)
-    print("tesettest", url, len(fighter_list))
 
     return fighter_list
 
@@ -182,11 +183,19 @@ async def fetch_all_fighters_info_async():
     :return: 모든 알파벳에 대한 크롤링 결과 리스트.
     """
     url_template = "http://www.ufcstats.com/statistics/fighters?char={}&page=all"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+    }
 
-    async with aiohttp.ClientSession() as session:
+    # 동시 요청 수를 3개로 제한하는 Semaphore 생성
+    semaphore = asyncio.Semaphore(3)
+
+    async with aiohttp.ClientSession(headers=headers) as session:
         coroutines_fighter_info = [
             asyncio.create_task(
-                fetch_fighter_info_async(session, url_template.format(chr(alphabet)))
+                fetch_fighter_info_async(
+                    session, url_template.format(chr(alphabet)), semaphore
+                )
             )
             for alphabet in range(ord("a"), ord("z") + 1)
         ]
