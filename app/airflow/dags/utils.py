@@ -1,7 +1,7 @@
 import re
 from typing import List
 
-from app.db.session import get_raw_db
+from app.db.session import get_db
 from pymongo import errors
 from log import logger
 
@@ -39,8 +39,8 @@ def lbs_to_kg(data: str):
 
 def check_connection():
     try:
-        # get_raw_db 컨텍스트 매니저를 사용하여 MongoDB 연결 시도
-        with get_raw_db() as db:
+        # get_db 컨텍스트 매니저를 사용하여 MongoDB 연결 시도
+        with get_db() as db:
             # 서버 상태 확인
             db.command("ping")
             print("MongoDB connection: Success")
@@ -58,7 +58,7 @@ def save_data(fighters_data: List[dict] = None, match_data: List[dict] = None):
             for fighter_list in fighters_data
             for fighter in fighter_list
         ]
-        with get_raw_db() as db:
+        with get_db() as db:
             try:
                 db["fighters"].delete_many({})
             except Exception as e:
@@ -76,7 +76,7 @@ def save_data(fighters_data: List[dict] = None, match_data: List[dict] = None):
             for match_list in match_data
             for match in match_list
         ]
-        with get_raw_db() as db:
+        with get_db() as db:
             try:
                 db["fighters"].delete_many({})
             except Exception as e:
