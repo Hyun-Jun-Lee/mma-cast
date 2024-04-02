@@ -8,11 +8,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from contextlib import contextmanager
 from app import config
 
-escaped_username = quote_plus(config.RAW_DB_USER)
-escaped_password = quote_plus(config.RAW_DB_PASSWORD)
-
 SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}:{config.DATABASE_PORT}/{config.DATABASE_NAME}"
-MONGODB_DATABASE_URL = f"mongodb+srv://{escaped_username}:{escaped_password}@{config.CLUSTER_NAME}.mongodb.net/{config.RAW_DB_NAME}?retryWrites=true&w=majority"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
@@ -25,19 +21,6 @@ engine = create_engine(
 SessionLocal = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine)
 )
-
-
-@contextmanager
-def get_raw_db():
-    """
-    호출되면 MongoDB 연결하고 작업 완료되면 close
-    """
-    client = MongoClient(MONGODB_DATABASE_URL)
-    db = client.get_default_database()
-    try:
-        yield db
-    finally:
-        client.close()
 
 
 @contextmanager
