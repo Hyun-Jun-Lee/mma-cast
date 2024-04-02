@@ -1,40 +1,26 @@
-import time, requests, re, asyncio, aiohttp
-from typing import List
+import asyncio, aiohttp
 from bs4 import BeautifulSoup
 from datetime import datetime
-from app.db.models.data import DataFighter, DataMatch
-from app.db.session import get_ware_db
-from log import logger
+
+from utils import inch_to_cm, lbs_to_kg, save_data
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
 
 
-def inch_to_cm(data: str, is_reach=False):
+async def fetch_fighter_info_async(
+    session: aiohttp.ClientSession, url: str, semaphore: int
+):
     """
-    concert inch(ex.6'7") to cm
+    주어진 URL에서 파이터 정보를 비동기적으로 크롤링합니다.
+
+    :param session: aiohttp 클라이언트 세션.
+    :param url: 크롤링할 URL.
+    :return: 크롤링된 파이터 정보 리스트.
     """
-    if is_reach:
-        reach = round((int(re.sub("[^0-9]", "", data)) * 2.54), 1)
-        return reach
-    H_feet = data.split(" ")[0]
-    H_inch = data.split(" ")[-1]
-
-    H_feet_e = int(re.sub("[^0-9]", "", H_feet)) * 12
-    H_inch_e = int(re.sub("[^0-9]", "", H_inch))
-    to_cm = round(((H_feet_e + H_inch_e) * 2.54), 1)
-    return to_cm
-
-
-def lbs_to_kg(data: str):
-    to_int = round((int(re.sub("[^0-9]", "", data)) / 2.205), 1)
-    return to_int
-
-
-async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
-    async with session.get(url) as response:
+    async with semaphore, session.get(url) as response:
         req = await response.text()
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(3)
     html = BeautifulSoup(req, "html.parser")
 
     fighter_list = []
@@ -51,8 +37,7 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
 
         fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
         if fighter_info_list:
-            model_dict["first_name"] = fighter_info_list[0]
-            model_dict["last_name"] = fighter_info_list[1]
+            model_dict["name"] = fighter_info_list[0] + " " + fighter_info_list[1]
             model_dict["nickname"] = (
                 fighter_info_list[2] if fighter_info_list[2] else None
             )
@@ -71,19 +56,27 @@ async def craw_fighter_info(session: aiohttp.ClientSession, url: str):
                 0 if fighter_info_list[6] == "--" else fighter_info_list[6]
             )
             model_dict["win"] = (
-                0 if fighter_info_list[7] == "--" else fighter_info_list[7]
+                0 if fighter_info_list[7] == "--" else int(fighter_info_list[7])
             )
             model_dict["lose"] = (
-                0 if fighter_info_list[8] == "--" else fighter_info_list[8]
+                0 if fighter_info_list[8] == "--" else int(fighter_info_list[8])
             )
             model_dict["draw"] = (
-                0 if fighter_info_list[9] == "--" else fighter_info_list[9]
+                0 if fighter_info_list[9] == "--" else int(fighter_info_list[9])
             )
             fighter_list.append(model_dict)
+
     return fighter_list
 
 
-async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
+async def fetch_match_info_async(session: aiohttp.ClientSession, url: str) -> dict:
+    """
+    주어진 URL에서 매치 정보를 비동기적으로 크롤링합니다.
+
+    :param session: aiohttp 클라이언트 세션.
+    :param url: 크롤링할 URL.
+    :return: 크롤링된 매치 정보 리스트.
+    """
     async with semaphore:
         async with session.get(url) as response:
             res = await response.text()
@@ -100,17 +93,15 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
                 else None
             )
             match_date = (
-                datetime.strptime(match_info[0], "%B %d, %Y").date()
-                if match_info
-                else None
+                datetime.strptime(match_info[0], "%B %d, %Y") if match_info else None
             )
+
             match_loc = match_info[1] if match_info else None
             match_list = []
             for td in html.find_all(
                 "tr",
                 "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click",
             ):
-                # TODO :  save to db
                 model_dict = {
                     "main_event": main_event,
                     "match_date": match_date,
@@ -121,11 +112,11 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
                     for i in td.find_all("p", "b-fight-details__table-text")
                 ]
                 model_dict["winner"] = infos[1]
-                model_dict["winner_str"] = infos[5]
+                model_dict["winner_strike"] = infos[5]
                 model_dict["winner_td"] = infos[7]
                 model_dict["winner_sub"] = infos[9]
                 model_dict["looser"] = infos[2]
-                model_dict["looser_str"] = infos[6]
+                model_dict["looser_strike"] = infos[6]
                 model_dict["looser_td"] = infos[8]
                 model_dict["looser_sub"] = infos[10]
                 model_dict["weight_class"] = infos[11]
@@ -137,13 +128,26 @@ async def craw_match(session: aiohttp.ClientSession, url: str) -> dict:
     return match_list
 
 
-async def craw_fighter():
-    url_template = "http://www.ufcstats.com/statistics/fighters?char={}&page=all"
+async def fetch_all_fighters_info_async():
+    """
+    모든 알파벳에 대해 UFC 통계 사이트에서 파이터 정보를 비동기적으로 크롤링합니다.
 
-    async with aiohttp.ClientSession() as session:
+    :return: 모든 알파벳에 대한 크롤링 결과 리스트.
+    """
+    url_template = "http://www.ufcstats.com/statistics/fighters?char={}&page=all"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+    }
+
+    # 동시 요청 수를 3개로 제한하는 Semaphore 생성
+    semaphore = asyncio.Semaphore(3)
+
+    async with aiohttp.ClientSession(headers=headers) as session:
         coroutines_fighter_info = [
             asyncio.create_task(
-                craw_fighter_info(session, url_template.format(chr(alphabet)))
+                fetch_fighter_info_async(
+                    session, url_template.format(chr(alphabet)), semaphore
+                )
             )
             for alphabet in range(ord("a"), ord("z") + 1)
         ]
@@ -152,7 +156,13 @@ async def craw_fighter():
     return res
 
 
-async def craw_game():
+async def fetch_all_matches_info_async():
+    """
+    UFC 통계 사이트에서 완료된 모든 이벤트의 매치 정보를 비동기적으로 크롤링합니다.
+
+    :return: 크롤링된 모든 이벤트의 매치 정보 리스트.
+    """
+
     url = "http://www.ufcstats.com/statistics/events/completed?page=all"
 
     async with aiohttp.ClientSession() as session:
@@ -161,7 +171,7 @@ async def craw_game():
             html = BeautifulSoup(res, "html.parser")
 
             coroutines = [
-                asyncio.create_task(craw_match(session, i["href"]))
+                asyncio.create_task(fetch_match_info_async(session, i["href"]))
                 for i in html.find_all("a", "b-link b-link_style_black")
             ]
 
@@ -169,68 +179,17 @@ async def craw_game():
     return res
 
 
-def delete_all_fighters_data():
-    with get_ware_db() as db_session:
-        try:
-            db_session.query(DataFighter).delete()
-            db_session.commit()
-        except Exception as e:
-            logger.error(f"Error deleting fighters data: {e}")
-            db_session.rollback()
-        finally:
-            db_session.close()
-
-
-def delete_all_matches_data():
-    with get_ware_db() as db_session:
-        try:
-            db_session.query(DataMatch).delete()
-            db_session.commit()
-        except Exception as e:
-            logger.error(f"Error deleting matches data: {e}")
-            db_session.rollback()
-        finally:
-            db_session.close()
-
-
-def run_craw_game():
+def execute_match_info_fetching():
+    """
+    크롤링한 게임 데이터를 저장하기 위해 `craw_game` 함수를 실행
+    합니다. 실행 결과는 MongoDB에 저장됩니다.
+    """
     loop = asyncio.get_event_loop()
-    match_data = loop.run_until_complete(craw_game())
-    save_data_to_database(match_data=match_data)
+    match_data = loop.run_until_complete(fetch_all_matches_info_async())
+    save_data(match_data=match_data)
 
 
-def run_craw_fighter():
+def execute_fighter_info_fetching():
     loop = asyncio.get_event_loop()
-    fighters_data = loop.run_until_complete(craw_fighter())
-    save_data_to_database(fighters_data=fighters_data)
-
-
-def save_data_to_database(
-    fighters_data: List[dict] = None, match_data: List[dict] = None
-):
-    if fighters_data:
-        delete_all_fighters_data()
-        data_list = [
-            DataFighter(**{k: (None if v == "" else v) for k, v in fighter.items()})
-            for fighter_list in fighters_data
-            for fighter in fighter_list
-        ]
-    elif match_data:
-        delete_all_matches_data()
-        data_list = [
-            DataMatch(**{k: (None if v == "" else v) for k, v in match.items()})
-            for match_list in match_data
-            for match in match_list
-        ]
-    else:
-        return
-
-    with get_ware_db() as db_session:
-        try:
-            db_session.bulk_save_objects(data_list)
-            db_session.commit()
-        except Exception as e:
-            logger.error(f"Error bulk save data: {e}")
-            db_session.rollback()
-        finally:
-            db_session.close()
+    fighters_data = loop.run_until_complete(fetch_all_fighters_info_async())
+    save_data(fighters_data=fighters_data)

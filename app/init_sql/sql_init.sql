@@ -1,0 +1,2 @@
+CREATE DATABASE airflow;
+CREATE DATABASE mma_cast;
