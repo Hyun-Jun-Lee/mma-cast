@@ -12,7 +12,7 @@ from selenium.webdriver.chrome.options import Options
 # 크롬 드라이버 자동 업데이트을 위한 모듈
 from webdriver_manager.chrome import ChromeDriverManager
 
-semaphore = asyncio.Semaphore(10)
+semaphore = asyncio.Semaphore(5)
 
 # 브라우저 꺼짐 방지 옵션
 chrome_options = Options()
@@ -58,7 +58,7 @@ url_list = [
 #     print("done")
 
 
-async def weight_classes(session):
+async def crawling_fighter_by_weight(session):
     for url in url_list:
         results = []
         async with session.get(url, ssl=False) as res:
@@ -80,8 +80,9 @@ async def weight_classes(session):
         for i in range(0, len(fighter_urls), batch_size):
             print(333, len(results))
             batch = fighter_urls[i : i + batch_size]
-            tasks = [asyncio.create_task(process_fighter_detail(url)) for url in batch]
+            tasks = [asyncio.create_task(crawling_fighter_detail(url)) for url in batch]
             results += await asyncio.gather(*tasks)
+
     return
 
 
@@ -95,69 +96,70 @@ def get_element(data: List, index: int, default_val=None):
         return default_val
 
 
-async def process_fighter_detail(url):
-    model_dict = {}
-    fighter_url = base_url + url
-    print(999, fighter_url)
-    browser.get(fighter_url)
-    html_content = browser.page_source  # 모든 컨텐츠가 로드된 페이지의 HTML 소스 코드 가져오기
+async def crawling_fighter_detail(url):
+    async with semaphore:
+        model_dict = {}
+        fighter_url = base_url + url
+        print(999, fighter_url)
+        browser.get(fighter_url)
+        html_content = browser.page_source  # 모든 컨텐츠가 로드된 페이지의 HTML 소스 코드 가져오기
 
-    html = BeautifulSoup(html_content, "html.parser")
-    details_two_columns_div = html.find("div", id="stats")  # id를 사용하여 요소 찾기
-    span_tags = details_two_columns_div.find_all("span")
+        html = BeautifulSoup(html_content, "html.parser")
+        details_two_columns_div = html.find("div", id="stats")  # id를 사용하여 요소 찾기
+        span_tags = details_two_columns_div.find_all("span")
 
-    span_texts = [
-        tag.text.replace("\n", "") if "N/A" not in tag.text else None
-        for tag in span_tags
-    ]
-    if span_texts:
-        name = get_element(span_texts, 0).replace(" ", "_")
-        pro_mma_record = (
-            get_element(span_texts, 1).split(" ")[0]
-            if get_element(span_texts, 1)
-            else None
-        )
-        nickname = (
-            get_element(span_texts, 2).replace(" ", "_")
-            if get_element(span_texts, 2)
-            else None
-        )
-        current_streak = get_element(span_texts, 3)
-        age = get_element(span_texts, 4)
-        birth = get_element(span_texts, 5)
-        last_fight = f"{get_element(span_texts, 6)} + {get_element(span_texts, 7)} + {get_element(span_texts, 8)}"
-        weight_class = get_element(span_texts, 9)
-        last_weigh_in = get_element(span_texts, 10)
-        affiliation = get_element(span_texts, 11)
-        height = get_element(span_texts, 12)
-        reach = get_element(span_texts, 13)
-        career_earnings = get_element(span_texts, 14)
-        born = get_element(span_texts, 15)
-        head_coach = get_element(span_texts, 17)
-        other_coanees = get_element(span_texts, 18)
+        span_texts = [
+            tag.text.replace("\n", "") if "N/A" not in tag.text else None
+            for tag in span_tags
+        ]
+        if span_texts:
+            name = get_element(span_texts, 0).replace(" ", "_")
+            pro_mma_record = (
+                get_element(span_texts, 1).split(" ")[0]
+                if get_element(span_texts, 1)
+                else None
+            )
+            nickname = (
+                get_element(span_texts, 2).replace(" ", "_")
+                if get_element(span_texts, 2)
+                else None
+            )
+            current_streak = get_element(span_texts, 3)
+            age = get_element(span_texts, 4)
+            birth = get_element(span_texts, 5)
+            last_fight = f"{get_element(span_texts, 6)} + {get_element(span_texts, 7)} + {get_element(span_texts, 8)}"
+            weight_class = get_element(span_texts, 9)
+            last_weigh_in = get_element(span_texts, 10)
+            affiliation = get_element(span_texts, 11)
+            height = get_element(span_texts, 12)
+            reach = get_element(span_texts, 13)
+            career_earnings = get_element(span_texts, 14)
+            born = get_element(span_texts, 15)
+            head_coach = get_element(span_texts, 17)
+            other_coanees = get_element(span_texts, 18)
 
-        model_dict["name"] = name
-        model_dict["pro_mma_record"] = pro_mma_record
-        model_dict["nickname"] = nickname
-        model_dict["current_streak"] = current_streak
-        model_dict["age"] = age
-        model_dict["birth"] = birth
-        model_dict["last_fight"] = last_fight
-        model_dict["weight_class"] = weight_class
-        model_dict["last_weigh_in"] = last_weigh_in
-        model_dict["affiliation"] = affiliation
-        model_dict["height"] = height
-        model_dict["reach"] = reach
-        model_dict["career_earnings"] = career_earnings
-        model_dict["born"] = born
-        model_dict["head_coach"] = head_coach
-        model_dict["other_coanees"] = other_coanees
+            model_dict["name"] = name
+            model_dict["pro_mma_record"] = pro_mma_record
+            model_dict["nickname"] = nickname
+            model_dict["current_streak"] = current_streak
+            model_dict["age"] = age
+            model_dict["birth"] = birth
+            model_dict["last_fight"] = last_fight
+            model_dict["weight_class"] = weight_class
+            model_dict["last_weigh_in"] = last_weigh_in
+            model_dict["affiliation"] = affiliation
+            model_dict["height"] = height
+            model_dict["reach"] = reach
+            model_dict["career_earnings"] = career_earnings
+            model_dict["born"] = born
+            model_dict["head_coach"] = head_coach
+            model_dict["other_coanees"] = other_coanees
     return model_dict
 
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        data = await weight_classes(session)
+        data = await crawling_fighter_by_weight(session)
     browser.quit()
 
 
