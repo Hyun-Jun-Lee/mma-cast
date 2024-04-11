@@ -1,8 +1,9 @@
-import asyncio, aiohttp
+import asyncio, aiohttp, time
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 from utils import inch_to_cm, lbs_to_kg, save_data
+from log import logger
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
 
@@ -181,15 +182,27 @@ async def fetch_all_matches_info_async():
 
 def execute_match_info_fetching():
     """
-    크롤링한 게임 데이터를 저장하기 위해 `craw_game` 함수를 실행
-    합니다. 실행 결과는 MongoDB에 저장됩니다.
+    UFC game 데이터 추출 및 저장
     """
+    start_time = time.time()
     loop = asyncio.get_event_loop()
     match_data = loop.run_until_complete(fetch_all_matches_info_async())
     save_data(match_data=match_data)
+    end_time = time.time()
+    diff = end_time - start_time
+    logger.warning(f"UFC match crawling time : {diff}")
+    return
 
 
 def execute_fighter_info_fetching():
+    """
+    UFC fighter 데이터 추출 및 저장
+    """
+    start_time = time.time()
     loop = asyncio.get_event_loop()
     fighters_data = loop.run_until_complete(fetch_all_fighters_info_async())
     save_data(fighters_data=fighters_data)
+    end_time = time.time()
+    diff = end_time - start_time
+    logger.warning(f"UFC fighter crawling time : {diff}")
+    return

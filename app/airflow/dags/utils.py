@@ -78,7 +78,7 @@ def save_data(fighters_data: List[dict] = None, match_data: List[dict] = None):
         ]
         with get_db() as db:
             try:
-                db["fighters"].delete_many({})
+                db["matches"].delete_many({})
             except Exception as e:
                 logger.error(f"Error deleting match data: {e}")
 
