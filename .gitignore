@@ -271,3 +271,5 @@ venv
 algo*.py
 app/alembic/versions
 logging/
+*.pid
+*.sqlite
