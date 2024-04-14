@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
-import airflow
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from utils import check_connection
-from ufc_data_crawling import (
+from tasks.utils import check_connection
+from tasks.ufc_data_crawling import (
     execute_fighter_info_fetching,
     execute_match_info_fetching,
 )
