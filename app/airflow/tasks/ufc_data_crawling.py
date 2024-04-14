@@ -1,4 +1,4 @@
-import asyncio, aiohttp, time
+import asyncio, aiohttp, time, traceback
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -6,6 +6,24 @@ from .utils import inch_to_cm, lbs_to_kg, save_data, get_element_safe
 from dags.log import logger
 
 semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
+
+
+async def fetch_fighter_birh(
+    session: aiohttp.ClientSession, semaphore: int, fighter_id: str
+):
+    url = f"http://www.ufcstats.com/fighter-details/{fighter_id}"
+    async with semaphore, session.get(url) as response:
+        req = await response.text()
+        html = BeautifulSoup(req, "html.parser")
+        dob_item = html.find(lambda tag: tag.name == "li" and "DOB" in tag.text)
+        if dob_item:
+            dob_date = (
+                dob_item.get_text(strip=True).split(":")[1].strip()
+            )  # ':' 기준으로 분할하여 날짜 부분만 추출
+        else:
+            dob_date = None
+
+    return dob_date
 
 
 async def fetch_fighter_info_async(
@@ -32,10 +50,16 @@ async def fetch_fighter_info_async(
                 "/"
             )[-1]
             model_dict["web_fighter_id"] = web_fighter_id
-        except:
+        except Exception as e:
             continue
-        fighter_info_td = row.find_all("td")
 
+        if "web_fighter_id" in model_dict:
+            dob_date = await fetch_fighter_birh(
+                session=session, fighter_id=web_fighter_id, semaphore=semaphore
+            )
+            model_dict["birth"] = dob_date
+
+        fighter_info_td = row.find_all("td")
         fighter_info_list = [fighter.text.strip() for fighter in fighter_info_td]
 
         model_dict["name"] = (
