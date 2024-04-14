@@ -26,9 +26,7 @@ x-airflow-common:
     PYTHONPATH: /opt/airflow
   volumes:
     - ./app:/opt/airflow/app
-    - ./app/airflow/dags:/opt/airflow/dags
-    - ./app/airflow/logs:/opt/airflow/logs
-    - ./app/airflow/plugins:/opt/airflow/plugins
+    - ./app/airflow:/opt/airflow
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     redis:
