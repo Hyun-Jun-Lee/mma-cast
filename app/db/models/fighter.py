@@ -1,20 +1,22 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from datetime import datetime
+
+from sqlalchemy import Column, ForeignKey, Integer, String, Date
 from sqlalchemy.orm import relationship
+
 from app.db.base import Base
 
 
 class Fighter(Base):
-    fighter_web_id = Column(String(50), nullable=True)
-    age = Column(Integer, nullable=True)
-    first_name = Column(String(50), nullable=True)
-    last_name = Column(String(50), nullable=True)
+    web_fighter_id = Column(String(50), nullable=True)
+    birth = Column(Date, nullable=True)
+    name = Column(String(50), nullable=True)
     nickname = Column(String(50), nullable=True)
+    height = Column(Integer, nullable=True)
+    weight = Column(Integer, nullable=True)
+    reach = Column(Integer, nullable=True)
     win = Column(Integer, nullable=True)
     lose = Column(Integer, nullable=True)
     draw = Column(Integer, nullable=True)
-    weight = Column(Integer, nullable=True)
-    height = Column(Integer, nullable=True)
-    reach = Column(Integer, nullable=True)
     stance = Column(String(50), nullable=True)
 
     winners = relationship(
