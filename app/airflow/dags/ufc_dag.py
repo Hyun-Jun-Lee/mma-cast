@@ -2,10 +2,8 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from tasks.utils import check_connection
-from tasks.ufc_data_crawling import (
-    execute_fighter_info_fetching,
-    execute_match_info_fetching,
-)
+from app.airflow.tasks.ufc_matchs import execute_match_info_fetching
+from app.airflow.tasks.ufc_fighters import execute_fighter_info_fetching
 
 
 default_args = {

@@ -51,44 +51,19 @@ def check_connection():
         raise
 
 
-def save_data(fighters_data: List[dict] = None, match_data: List[dict] = None):
-    if fighters_data:
-        data_list = [
-            {k: (None if v == "" else v) for k, v in fighter.items()}
-            for fighter_list in fighters_data
-            for fighter in fighter_list
-        ]
-        with get_mongo_db() as db:
-            try:
-                db["fighters"].delete_many({})
-            except Exception as e:
-                logger.error(f"Error deleting fighters data: {e}")
+def save_data(collection_name: str, data: List):
 
-            try:
-                db["fighters"].insert_many(data_list)
-                logger.warning(f"UFC fighters insert : {len(data_list)}")
-            except Exception as e:
-                logger.error(f"Error save fighters data: {e}")
+    with get_mongo_db() as mongo_db:
+        try:
+            mongo_db[collection_name].delete_many({})
+        except Exception as e:
+            logger.error(f"Error deleting fighters data: {e}")
 
-    elif match_data:
-        data_list = [
-            {k: (None if v == "" else v) for k, v in match.items()}
-            for match_list in match_data
-            for match in match_list
-        ]
-        with get_mongo_db() as db:
-            try:
-                db["matches"].delete_many({})
-            except Exception as e:
-                logger.error(f"Error deleting match data: {e}")
-
-            try:
-                db["matches"].insert_many(data_list)
-                logger.warning(f"UFC matches insert : {len(data_list)}")
-            except Exception as e:
-                logger.error(f"Error save match data: {e}")
-    else:
-        return
+        try:
+            mongo_db[collection_name].insert_many(data)
+            logger.warning(f"UFC fighters insert : {len(data)}")
+        except Exception as e:
+            logger.error(f"Error save fighters data: {e}")
 
 
 def get_element_safe(list_, index: int = None, key: str = None):
@@ -98,11 +73,15 @@ def get_element_safe(list_, index: int = None, key: str = None):
     """
     if key:
         try:
+            if list_[key] == "":
+                return None
             return list_[key]
         except KeyError:
             return None
     else:
         try:
+            if list_[index] == "":
+                return None
             return list_[index]
         except IndexError:
             return None
