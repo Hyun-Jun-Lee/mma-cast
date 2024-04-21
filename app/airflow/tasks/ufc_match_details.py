@@ -6,6 +6,38 @@ from .utils import save_data, get_element_safe
 from dags.log import logger
 
 
+async def extract_fighter_stats(tbody):
+    for tr in tbody.find_all("tr"):
+        cell_texts = [td.text.strip() for td in tr.find_all("td")]
+
+        fighters_names = cell_texts[0].split("\n\n\n")
+        sig_strike_stats = cell_texts[2].split()
+        takedown_stats = cell_texts[5].split()
+        sub_attack_stats = cell_texts[7].split()
+        control_time_stats = cell_texts[8].split()
+
+        red_fighter = {
+            "name": fighters_names[0],
+            "total_strike": sig_strike_stats[2],
+            "hit_strike": sig_strike_stats[0],
+            "total_takedown": takedown_stats[2],
+            "takedown": takedown_stats[0],
+            "sub_attacks": sub_attack_stats[0],
+            "control_time": control_time_stats[0],
+        }
+        blue_fighter = {
+            "name": fighters_names[1],
+            "total_strike": sig_strike_stats[3],
+            "hit_strike": sig_strike_stats[1],
+            "total_takedown": takedown_stats[3],
+            "takedown": takedown_stats[1],
+            "sub_attacks": sub_attack_stats[1],
+            "control_time": control_time_stats[1],
+        }
+
+    return red_fighter, blue_fighter
+
+
 async def fetch_fight_links(session, url, semaphore, all_fight_links):
     async with semaphore:
         async with session.get(url) as response:
@@ -62,12 +94,10 @@ async def fetch_fight_stat(session, semaphore, fight_links):
                 main_event_title = html.find("h2").get_text(strip=True)
 
                 all_tables = html.find_all("table")
-                try:
-                    for tr in all_tables[0].find_all("tbody"):
-                        cell_texts = [td.text.strip() for td in tr.find_all("td")]
-                        fighters = cell_texts[0].split("\n\n\n")
-                except:
-                    print(111, main_event_title)
+                print(len(all_tables))
+                # total_tables = all_tables[0].find("tbody")
+
+                # red_fighter_total, blue_fighter_total = await extract_fighter_stats(total_tables)
 
             # headers = []
             # for th in html.find_all("th"):
@@ -89,11 +119,11 @@ async def main():
 
     async with semaphore:
         async with aiohttp.ClientSession() as session:
-            fight_links = await fetch_all_fight(session, semaphore)
-            with open("fight_links.txt", "w") as file:
-                for link in fight_links:
-                    file.write(link + "\n")
-            # data = await fetch_fight_stat(session, semaphore, fight_links)
+            # fight_links = await fetch_all_fight(session, semaphore)
+            with open("fight_links.txt", "r") as file:
+                fight_links = {line.strip() for line in file}
+
+            data = await fetch_fight_stat(session, semaphore, fight_links)
             # 데이터 처리 로직
             # save_data(collection_name="fight-detail", data=data)
 
