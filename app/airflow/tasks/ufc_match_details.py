@@ -6,7 +6,7 @@ from .utils import save_data, get_element_safe
 from dags.log import logger
 
 
-async def extract_fighter_stats(tbody):
+async def extrat_total_fight_stat(tbody):
     for tr in tbody.find_all("tr"):
         cell_texts = [td.text.strip() for td in tr.find_all("td")]
 
@@ -94,10 +94,13 @@ async def fetch_fight_stat(session, semaphore, fight_links):
                 main_event_title = html.find("h2").get_text(strip=True)
 
                 all_tables = html.find_all("table")
-                print(len(all_tables))
-                # total_tables = all_tables[0].find("tbody")
+                total_tables = all_tables[0].find("tbody")
+                total_round_tables = all_tables[1].find("tbody")
+                total_detail_strike_tables = all_tables[2].find("tbody")
+                total_detail_strike_round_tables = all_tables[3].find("tbody")
 
-                # red_fighter_total, blue_fighter_total = await extract_fighter_stats(total_tables)
+                # TODO : 1,2,3 table
+                # red_fighter_total, blue_fighter_total = await extrat_total_fight_stat(total_tables)
 
             # headers = []
             # for th in html.find_all("th"):
