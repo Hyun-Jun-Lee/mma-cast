@@ -6,6 +6,52 @@ from .utils import save_data, get_element_safe
 from dags.log import logger
 
 
+async def extract_total_strike_datail(tbody):
+    for tr in tbody.find_all("tr"):
+        cell_texts = [td.text.strip() for td in tr.find_all("td")]
+        fighters_names = cell_texts[0].split("\n\n\n")
+        head_strike = cell_texts[3].split()
+        body_strike = cell_texts[4].split()
+        leg_strike = cell_texts[5].split()
+        clinch_strike = cell_texts[7].split()
+        ground_strike = cell_texts[8].split()
+
+        print(1, head_strike)
+        print(2, body_strike)
+        print(3, leg_strike)
+        print(4, clinch_strike)
+        print(5, ground_strike)
+
+    # red_fighter = {
+    #     "name": fighters_names[0].strip(),
+    #     "total_head_strike": ,
+    #     "landed_head_strike": ,
+    #     "total_body_strike": ,
+    #     "landed_body_strike": ,
+    #     "total_leg_strike": ,
+    #     "landed_leg_strike": ,
+    #     "total_clinch_strike": ,
+    #     "landed_clinch_strike": ,
+    #     "total_ground_strike": ,
+    #     "landed_ground_strike": ,
+    # }
+    # blue_fighter = {
+    #     "name": fighters_names[1].strip(),
+    #     "total_head_strike": ,
+    #     "landed_head_strike": ,
+    #     "total_body_strike": ,
+    #     "landed_body_strike": ,
+    #     "total_leg_strike": ,
+    #     "landed_leg_strike": ,
+    #     "total_clinch_strike": ,
+    #     "landed_clinch_strike": ,
+    #     "total_ground_strike": ,
+    #     "landed_ground_strike": ,
+    # }
+
+    # return red_fighter, blue_fighter
+
+
 async def extract_stats(cell_texts):
     fighters_names = cell_texts[0].split("\n\n\n")
     sig_strike_stats = cell_texts[2].split()
@@ -14,22 +60,22 @@ async def extract_stats(cell_texts):
     control_time_stats = cell_texts[9].split()
 
     red_fighter = {
-        "name": fighters_names[0],
-        "total_strike": sig_strike_stats[2],
-        "hit_strike": sig_strike_stats[0],
-        "total_takedown": takedown_stats[2],
-        "takedown": takedown_stats[0],
-        "sub_attacks": sub_attack_stats[0],
-        "control_time": control_time_stats[0],
+        "name": fighters_names[0].strip(),
+        "total_strike": sig_strike_stats[2].strip(),
+        "landed_strike": sig_strike_stats[0].strip(),
+        "total_takedown": takedown_stats[2].strip(),
+        "landed_takedown": takedown_stats[0].strip(),
+        "sub_attacks": sub_attack_stats[0].strip(),
+        "control_time": control_time_stats[0].strip(),
     }
     blue_fighter = {
-        "name": fighters_names[1],
-        "total_strike": sig_strike_stats[5],
-        "hit_strike": sig_strike_stats[3],
-        "total_takedown": takedown_stats[5],
-        "takedown": takedown_stats[3],
-        "sub_attacks": sub_attack_stats[1],
-        "control_time": control_time_stats[1],
+        "name": fighters_names[1].strip(),
+        "total_strike": sig_strike_stats[5].strip(),
+        "landed_strike": sig_strike_stats[3].strip(),
+        "total_takedown": takedown_stats[5].strip(),
+        "landed_takedown": takedown_stats[3].strip(),
+        "sub_attacks": sub_attack_stats[1].strip(),
+        "control_time": control_time_stats[1].strip(),
     }
 
     return red_fighter, blue_fighter
@@ -131,12 +177,12 @@ async def fetch_fight_stat(session, semaphore, fight_links):
 
             total_stats = await extrat_total_fight_stat(total_tables)
             each_round_stat = await extract_each_round_stat(total_round_tables)
-            total_round_detail = await extract_total_round_detail(
+            total_round_detail = await extract_total_strike_datail(
                 total_detail_strike_tables
             )
-            each_round_detail = await extract_each_round_detail(
-                total_detail_strike_round_tables
-            )
+            # each_round_detail = await extract_each_round_detail(
+            #     total_detail_strike_round_tables
+            # )
 
             fighte_info["total"] = total_stats
             fighte_info["rounds"] = each_round_stat
