@@ -11,7 +11,7 @@ async def extract_stats(cell_texts):
     sig_strike_stats = cell_texts[2].split()
     takedown_stats = cell_texts[5].split()
     sub_attack_stats = cell_texts[7].split()
-    control_time_stats = cell_texts[8].split()
+    control_time_stats = cell_texts[9].split()
 
     red_fighter = {
         "name": fighters_names[0],
@@ -24,10 +24,10 @@ async def extract_stats(cell_texts):
     }
     blue_fighter = {
         "name": fighters_names[1],
-        "total_strike": sig_strike_stats[3],
-        "hit_strike": sig_strike_stats[1],
-        "total_takedown": takedown_stats[3],
-        "takedown": takedown_stats[1],
+        "total_strike": sig_strike_stats[5],
+        "hit_strike": sig_strike_stats[3],
+        "total_takedown": takedown_stats[5],
+        "takedown": takedown_stats[3],
         "sub_attacks": sub_attack_stats[1],
         "control_time": control_time_stats[1],
     }
@@ -35,7 +35,7 @@ async def extract_stats(cell_texts):
     return red_fighter, blue_fighter
 
 
-async def extrat_total_round_fight_stat(tbody):
+async def extract_each_round_stat(tbody):
     total_round_stat = []
     round_info = 0
 
@@ -114,7 +114,7 @@ async def fetch_all_fight(session, semaphore):
 async def fetch_fight_stat(session, semaphore, fight_links):
     async with semaphore:
         # for url in fight_links:
-        url = "http://www.ufcstats.com/fight-details/894c44c3d04aaf6f"
+        url = "http://www.ufcstats.com/fight-details/01f7c28804746979"
         fighte_info = {}
         async with session.get(url) as response:
             res = await response.text()
@@ -129,12 +129,19 @@ async def fetch_fight_stat(session, semaphore, fight_links):
             total_detail_strike_tables = all_tables[2].find("tbody")
             total_detail_strike_round_tables = all_tables[3].find("tbody")
 
-            total_detail = await extrat_total_fight_stat(total_tables)
+            total_stats = await extrat_total_fight_stat(total_tables)
+            each_round_stat = await extract_each_round_stat(total_round_tables)
+            total_round_detail = await extract_total_round_detail(
+                total_detail_strike_tables
+            )
+            each_round_detail = await extract_each_round_detail(
+                total_detail_strike_round_tables
+            )
 
-            round_detail = await extrat_total_round_fight_stat(total_round_tables)
+            fighte_info["total"] = total_stats
+            fighte_info["rounds"] = each_round_stat
 
-            fighte_info["total"] = total_detail
-            fighte_info["rounds"] = round_detail
+        # print(fighte_info)
 
 
 async def main():
