@@ -16,40 +16,34 @@ async def extract_total_strike_datail(tbody):
         clinch_strike = cell_texts[7].split()
         ground_strike = cell_texts[8].split()
 
-        print(1, head_strike)
-        print(2, body_strike)
-        print(3, leg_strike)
-        print(4, clinch_strike)
-        print(5, ground_strike)
+        red_fighter = {
+            "name": fighters_names[0].strip(),
+            "attempt_head_strike": head_strike[2],
+            "landed_head_strike": head_strike[0],
+            "attempt_body_strike": body_strike[2],
+            "landed_body_strike": body_strike[0],
+            "attempt_leg_strike": leg_strike[2],
+            "landed_leg_strike": leg_strike[0],
+            "attempt_clinch_strike": clinch_strike[2],
+            "landed_clinch_strike": clinch_strike[0],
+            "attempt_ground_strike": ground_strike[2],
+            "landed_ground_strike": ground_strike[0],
+        }
+        blue_fighter = {
+            "name": fighters_names[1].strip(),
+            "attempt_head_strike": head_strike[5],
+            "landed_head_strike": head_strike[3],
+            "attempt_body_strike": body_strike[5],
+            "landed_body_strike": body_strike[3],
+            "attempt_leg_strike": leg_strike[5],
+            "landed_leg_strike": leg_strike[3],
+            "attempt_clinch_strike": clinch_strike[5],
+            "landed_clinch_strike": clinch_strike[3],
+            "attempt_ground_strike": ground_strike[5],
+            "landed_ground_strike": ground_strike[3],
+        }
 
-    # red_fighter = {
-    #     "name": fighters_names[0].strip(),
-    #     "total_head_strike": ,
-    #     "landed_head_strike": ,
-    #     "total_body_strike": ,
-    #     "landed_body_strike": ,
-    #     "total_leg_strike": ,
-    #     "landed_leg_strike": ,
-    #     "total_clinch_strike": ,
-    #     "landed_clinch_strike": ,
-    #     "total_ground_strike": ,
-    #     "landed_ground_strike": ,
-    # }
-    # blue_fighter = {
-    #     "name": fighters_names[1].strip(),
-    #     "total_head_strike": ,
-    #     "landed_head_strike": ,
-    #     "total_body_strike": ,
-    #     "landed_body_strike": ,
-    #     "total_leg_strike": ,
-    #     "landed_leg_strike": ,
-    #     "total_clinch_strike": ,
-    #     "landed_clinch_strike": ,
-    #     "total_ground_strike": ,
-    #     "landed_ground_strike": ,
-    # }
-
-    # return red_fighter, blue_fighter
+    return red_fighter, blue_fighter
 
 
 async def extract_stats(cell_texts):
@@ -61,18 +55,18 @@ async def extract_stats(cell_texts):
 
     red_fighter = {
         "name": fighters_names[0].strip(),
-        "total_strike": sig_strike_stats[2].strip(),
+        "attempts_strike": sig_strike_stats[2].strip(),
         "landed_strike": sig_strike_stats[0].strip(),
-        "total_takedown": takedown_stats[2].strip(),
+        "attempts_takedown": takedown_stats[2].strip(),
         "landed_takedown": takedown_stats[0].strip(),
         "sub_attacks": sub_attack_stats[0].strip(),
         "control_time": control_time_stats[0].strip(),
     }
     blue_fighter = {
         "name": fighters_names[1].strip(),
-        "total_strike": sig_strike_stats[5].strip(),
+        "attempts_strike": sig_strike_stats[5].strip(),
         "landed_strike": sig_strike_stats[3].strip(),
-        "total_takedown": takedown_stats[5].strip(),
+        "attempts_takedown": takedown_stats[5].strip(),
         "landed_takedown": takedown_stats[3].strip(),
         "sub_attacks": sub_attack_stats[1].strip(),
         "control_time": control_time_stats[1].strip(),
